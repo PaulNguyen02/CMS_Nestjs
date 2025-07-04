@@ -3,13 +3,13 @@ import {
     PrimaryGeneratedColumn, 
     Column,  
     OneToOne,
-    OneToMany,
+    ManyToMany,
     ManyToOne,
-    JoinColumn } from "typeorm";
+    JoinColumn,
+    JoinTable } from "typeorm";
 import { BaseEntity } from "../../../common/entities/base.entity";
 import { Files } from "../../files/entities/files.entity";
 import { Categories } from "../../categories/entities/categories.entity";
-import { relatedPosts } from "../../related-posts/entities/related-posts.entity";
 @Entity('posts')
 export class Posts extends BaseEntity{
     @PrimaryGeneratedColumn('uuid')
@@ -27,9 +27,8 @@ export class Posts extends BaseEntity{
     @Column()
     content: string;
 
-    @Column({name:"is_active"})
-    isActive: boolean;
-
+    @Column()
+    is_active: boolean;
 
     @Column()
     banner: string;
@@ -45,7 +44,22 @@ export class Posts extends BaseEntity{
     @JoinColumn({ name: 'category_id' }) 
     categories: Categories;
 
-    @OneToMany(() => relatedPosts, rel => rel.post)
-    related_posts: relatedPosts[];
+    @ManyToMany(() => Posts, post => post.related_by_posts,{cascade: true})
+    @JoinTable({
+        name: 'post_related_posts',
+        joinColumn: {
+            name: 'post_id',
+            referencedColumnName: 'id'
+        },
+        inverseJoinColumn: {
+            name: 'related_post_id',
+            referencedColumnName: 'id'
+        }
+    }) 
+    related_posts: Posts[];
+
+    // Inverse relationship - các post có related đến post này
+    @ManyToMany(() => Posts, post => post.related_posts)
+    related_by_posts: Posts[];    
 
 }

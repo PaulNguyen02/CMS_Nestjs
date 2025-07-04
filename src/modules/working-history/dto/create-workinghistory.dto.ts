@@ -15,8 +15,4 @@ export class CreateWorkingHistoryDto extends BaseDto{
     @IsString()
     categories: string;
 
-    @ApiProperty()
-    @IsUUID()
-    memberId: string; 
-
 }

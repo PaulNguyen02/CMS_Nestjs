@@ -8,7 +8,6 @@ import { MenuItemModule } from '@/modules/menu-items/menu-items.module';
 import { MessageModule } from '@modules/messages/messages.module';
 import { PartnersModule } from '@modules/partners/partners.module';
 import { PostsModule } from '@modules/posts/posts.module';
-import { RelatedPostsModule } from '@modules/related-posts/related-posts.module';
 import { UserLoginModule } from '@modules/user-login/user-login.module';
 import { WorkingHistoryModule } from '@modules/working-history/working-history.module';
 import { DatabaseModule } from '@database/database.module';
@@ -26,7 +25,6 @@ export const appModules = [
     MessageModule,
     PartnersModule,
     UserLoginModule,
-    RelatedPostsModule,
     WorkingHistoryModule,
     ContactInformationModule
 ]

@@ -10,9 +10,8 @@ import { GetCategoryDto } from './dto/get-category.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PaginationDto } from '@/common/dto/pagination.dto';
-import { ICategoriesService} from './categories.service.interface'
 @Injectable()
-export class CategoriesService implements ICategoriesService{
+export class CategoriesService{
     constructor(
         @InjectRepository(Categories)
         private readonly categoryRepository: Repository<Categories>,
@@ -46,14 +45,6 @@ export class CategoriesService implements ICategoriesService{
             excludeExtraneousValues: true,
         });
 
-        return res;
-    }
-
-    async get(): Promise<GetCategoryDto[]> {
-        const categories = await this.categoryRepository.find();
-        const res = plainToInstance(GetCategoryDto, categories, {
-            excludeExtraneousValues: true,
-        });
         return res;
     }
 

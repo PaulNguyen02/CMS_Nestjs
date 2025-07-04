@@ -3,11 +3,8 @@ import {
     Post, 
     Get,
     Delete,
-    Query,
     Param,
     Body,
-    ParseIntPipe,
-    DefaultValuePipe
  } from '@nestjs/common';
 import { FollowUsService } from './follow-us.service';
 import { GetFollowusDto } from './dto/get-followus.dto';
@@ -17,13 +14,13 @@ import { ApiResponse } from '@/common/response/api-response';
 @Controller('follow-us')
 export class FollowUsController {
     constructor(private readonly followService: FollowUsService) {}
-    @Post('create')
+    @Post()
         async create(@Body() dto: CreateFollowusDto): Promise<ApiResponse<GetFollowusDto>>{
             try{
                 const result = await this.followService.create(dto);
                 return ApiResponse.success<GetFollowusDto>(result);
             }catch(err){
-                return ApiResponse.error();
+                return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
         }
     }
 

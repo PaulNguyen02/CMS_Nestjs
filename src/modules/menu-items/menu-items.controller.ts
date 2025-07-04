@@ -16,13 +16,13 @@ import { ApiResponse } from '@/common/response/api-response';
 export class MenuItemsController {
     constructor(private readonly menuitemService: MenuItemsService) {}
 
-    @Post('create')
+    @Post()
     async create(@Body() dto: CreateMenuItemDto): Promise<ApiResponse<GetMenuItemDto>>{
         try{
             const result = await this.menuitemService.create(dto);
             return ApiResponse.success<GetMenuItemDto>(result);
         }catch(err){
-            return ApiResponse.error();
+            return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
         }
     }
 
@@ -42,7 +42,7 @@ export class MenuItemsController {
             const res = await this.menuitemService.update(id, update);
             return ApiResponse.success<GetMenuItemDto>(res)
         }catch(err){
-            return ApiResponse.error()
+            return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
         }
     }
     

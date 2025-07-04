@@ -17,13 +17,13 @@ import { ApiResponse } from '@/common/response/api-response';
 @Controller('messages')
 export class MessagesController {
     constructor(private readonly messageService: MessagesService) {}
-    @Post('create')
+    @Post()
     async create(@Body() dto: CreateMessageDto): Promise<ApiResponse<GetMessageDto>>{
         try{
             const result = await this.messageService.create(dto);
             return ApiResponse.success<GetMessageDto>(result);
         }catch(err){
-            return ApiResponse.error();
+            return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
         }
     }
 

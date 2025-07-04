@@ -22,9 +22,17 @@ export class Member extends BaseEntity{
     @Column()
     position: string;
 
-    @OneToMany(() => Files, (file) => file.member)
+    @OneToMany(
+        () => Files, 
+        (file) => file.member, 
+        { cascade: true }
+    )
     files: Files[];
 
-    @OneToMany(() => workingHistory, (working_history) => working_history.member)
+    @OneToMany(
+        () => workingHistory, 
+        (working_history) => working_history.member, 
+        { cascade: true }
+    )
     working_history: workingHistory[];
 }

@@ -15,9 +15,8 @@ import { GetPartnerDto } from './dto/get-partner.dto';
 import { UpdatePartnerDto } from './dto/update-partner.dto';
 import { CreatePartnerDto } from './dto/create-partner.dto';
 import { PaginationDto } from '@/common/dto/pagination.dto';
-import { IPartnersService } from './partners.service.interface';
 @Injectable()
-export class PartnersService implements IPartnersService{
+export class PartnersService{
 
     constructor(
         @InjectRepository(Partners)

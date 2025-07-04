@@ -18,7 +18,7 @@ import { ApiResponse } from '@/common/response/api-response';
 @Controller('partners')
 export class PartnersController {
     constructor(private readonly partnerService: PartnersService) {}
-    @Post('create')
+    @Post()
     async create(@Body() dto: CreatePartnerDto): Promise<ApiResponse<GetPartnerDto>>{
         try{
             const result = await this.partnerService.create(dto);

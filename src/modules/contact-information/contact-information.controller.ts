@@ -2,11 +2,8 @@ import { Controller,
     Post, 
     Get,
     Put,
-    Query,
     Param,
-    Body,
-    DefaultValuePipe,
-    ParseIntPipe 
+    Body 
 } from '@nestjs/common';
 import { ApiResponse } from '@/common/response/api-response';
 import { GetInformationDto } from './dto/get-information.dto';
@@ -17,13 +14,13 @@ import { ContactInformationService } from './contact-information.service';
 @Controller('contact-information')
 export class ContactInformationController {
     constructor(private readonly contactinformationService: ContactInformationService) {}
-    @Post('create')
+    @Post()
     async create(@Body() dto: CreateInformationDto): Promise<ApiResponse<GetInformationDto>>{
         try{
             const result = await this.contactinformationService.create(dto);
             return ApiResponse.success<GetInformationDto>(result);
         }catch(err){
-            return ApiResponse.error();
+            return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
         }
     }
 
@@ -43,7 +40,7 @@ export class ContactInformationController {
             const res = await this.contactinformationService.update(id, update);
             return ApiResponse.success<GetInformationDto>(res)
         }catch(err){
-            return ApiResponse.error()
+            return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
         }
     }
 }

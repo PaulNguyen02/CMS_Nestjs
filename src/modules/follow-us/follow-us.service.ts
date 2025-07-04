@@ -11,9 +11,8 @@ import { plainToInstance } from 'class-transformer';
 import { followUs } from './entities/follow-us.entity';
 import { GetFollowusDto } from './dto/get-followus.dto';
 import { CreateFollowusDto } from './dto/create-followus.dto';
-import { IFollowUsService } from './follow-us.service.interface';
 @Injectable()
-export class FollowUsService implements IFollowUsService{
+export class FollowUsService{
     constructor(
         @InjectRepository(followUs)
         private readonly followRepository: Repository<followUs>,

@@ -19,13 +19,13 @@ import { PaginationDto } from '@/common/dto/pagination.dto';
 @Controller('posts')
 export class PostsController {
     constructor (private readonly postService: PostsService){}
-    @Post('create')
+    @Post()
     async create(@Body() dto: CreatePostDto): Promise<ApiResponse<GetPostDto>>{
         try{
             const result = await this.postService.create(dto);
             return ApiResponse.success<GetPostDto>(result);
         }catch(err){
-            return ApiResponse.error();
+            return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
         }
     }
 
@@ -51,7 +51,7 @@ export class PostsController {
             const res = await this.postService.update(id, update);
             return ApiResponse.success<GetPostDto>(res)
         }catch(err){
-            return ApiResponse.error()
+            return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
         }
     }
 
