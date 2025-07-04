@@ -6,9 +6,8 @@ import { menuGroup } from './entities/menu-group.entity';
 import { GetMenuGroupDto } from './dto/get-menugroup.dto';
 import { CreateMenuGroupDto } from './dto/create-menugroup.dto';
 import { UpdateMenuGroupDto } from './dto/update-menugroup.dto';
-import { IMenuGroupService } from './menu-group.service.interface';
 @Injectable()
-export class MenuGroupsService implements IMenuGroupService{
+export class MenuGroupsService{
 
     constructor(
         @InjectRepository(menuGroup)

@@ -1,4 +1,5 @@
 export enum ResponseCode {
-  SUCCESS = 'Thực hiện thành công',
-  SERVER_ERROR = 'Lỗi với máy chủ',
+  SUCCESS = "Thành công",
+  SERVER_ERROR = "Server lỗi",
+  VALIDATION_ERROR = "Hãy kiểm tra lại dữ liệu gửi",
 }

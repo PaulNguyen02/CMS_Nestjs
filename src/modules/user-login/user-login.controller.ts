@@ -13,7 +13,7 @@ import { CreateUserLoginDto } from './dto/create-userlogin.dto';
 export class LoginController {
     constructor(private readonly userLoginService: UserLoginService) {}
 
-    @Post('create')
+    @Post()
     async create(
         @Body() dto: CreateUserLoginDto, 
         @Headers('user-agent') userAgent: string
@@ -22,7 +22,7 @@ export class LoginController {
             const result = await this.userLoginService.create(dto, userAgent);
             return ApiResponse.success<GetUserLoginDto>(result);
         }catch(err){
-            return ApiResponse.error();
+            return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
         }
     }
 

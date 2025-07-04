@@ -11,9 +11,8 @@ import { GetMemberDto } from './dto/get-member.dto';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
 import { PaginationDto } from '@/common/dto/pagination.dto';
-import { IMemberService } from './member.service.interface';
 @Injectable()
-export class MembersService implements IMemberService{
+export class MembersService{
 
     constructor(
         @InjectRepository(Member)
@@ -28,7 +27,13 @@ export class MembersService implements IMemberService{
             slug: dto.slug,
             position: dto.position,
             created_at: new Date(),
-            created_by: dto.created_by 
+            created_by: dto.created_by,
+
+            working_history: dto.working_history?.map(history => ({
+                ...history,
+                created_at: new Date(),
+                created_by: dto.created_by,
+            })),
         });
         const saved = await this.memberRepository.save(member);
         const res = plainToInstance(GetMemberDto, saved, {
@@ -50,19 +55,6 @@ export class MembersService implements IMemberService{
         const res = plainToInstance(GetMemberDto, savedMember, {
             excludeExtraneousValues: true,
         });        
-        return res;
-    }
-
-    async get(): Promise<GetMemberDto[]>{
-        const cached = await this.cacheManager.get<GetMemberDto[]>('member/all');
-        if(cached){
-            return cached;
-        }
-        const members = await this.memberRepository.find({ relations: ['files', 'working_history'] });
-        const res = plainToInstance(GetMemberDto, members, {
-            excludeExtraneousValues: true,
-        });
-        await this.cacheManager.set('member/all', res, 60);
         return res;
     }
 
@@ -97,7 +89,11 @@ export class MembersService implements IMemberService{
 
     async findOne(member_id: string): Promise<GetMemberDto>{
         const existedMember = await this.memberRepository.findOne({
-            where: { id: member_id }
+            where: { id: member_id },
+            relations:[
+                'files', 
+                'working_history'
+            ],
         });  
         const res = plainToInstance(GetMemberDto, existedMember, {
             excludeExtraneousValues: true,

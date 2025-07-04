@@ -6,9 +6,8 @@ import { plainToInstance } from 'class-transformer';
 import { userLogin } from './entities/user-login.entity';
 import { GetUserLoginDto } from './dto/get-userlogin.dto';
 import { CreateUserLoginDto } from './dto/create-userlogin.dto';
-import { IUserLoginService } from './user-login.serivce.interface';
 @Injectable()
-export class UserLoginService implements IUserLoginService{
+export class UserLoginService{
     constructor(
         @InjectRepository(userLogin)
         private readonly userRepository: Repository<userLogin>,

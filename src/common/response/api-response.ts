@@ -18,4 +18,8 @@ export class ApiResponse<T> {
   static error<T = null>(): ApiResponse<T> {
     return new ApiResponse<T>(HttpStatus.INTERNAL_SERVER_ERROR, ResponseCode.SERVER_ERROR, null);
   }
+
+  static validationError(errors: { field: string; error: string }[]): ApiResponse<any> {
+    return new ApiResponse(HttpStatus.BAD_REQUEST, ResponseCode.VALIDATION_ERROR, errors);
+  }
 }

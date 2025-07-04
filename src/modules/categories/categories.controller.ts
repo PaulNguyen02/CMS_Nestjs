@@ -19,23 +19,13 @@ import { PaginationDto } from '@/common/dto/pagination.dto';
 @Controller('categories')
 export class CategoriesController {
     constructor(private readonly categoryService: CategoriesService) {}
-    @Post('create')
+    @Post()
     async create(@Body() dto: CreateCategoryDto): Promise<ApiResponse<GetCategoryDto>>{
         try{
             const result = await this.categoryService.create(dto);
             return ApiResponse.success<GetCategoryDto>(result);
         }catch(err){
-            return ApiResponse.error();
-        }
-    }
-
-    @Get('all')
-    async get(): Promise<ApiResponse<GetCategoryDto[]>>{
-        try{
-            const res = await this.categoryService.get();
-            return ApiResponse.success<GetCategoryDto[]>(res)
-        }catch(err){
-            return ApiResponse.error()
+            return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
         }
     }
 
@@ -58,7 +48,7 @@ export class CategoriesController {
             const res = await this.categoryService.update(id, update);
             return ApiResponse.success<GetCategoryDto>(res)
         }catch(err){
-            return ApiResponse.error()
+            return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
         }
     }
 

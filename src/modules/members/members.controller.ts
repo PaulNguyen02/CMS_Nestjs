@@ -19,13 +19,13 @@ import { ApiResponse } from '@/common/response/api-response';
 @Controller('members')
 export class MembersController {
     constructor(private readonly memberService: MembersService) {}
-    @Post('create')
+    @Post()
         async create(@Body() dto: CreateMemberDto): Promise<ApiResponse<GetMemberDto>>{
         try{
             const result = await this.memberService.create(dto);
             return ApiResponse.success<GetMemberDto>(result);
         }catch(err){
-            return ApiResponse.error();
+            return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
         }
     }
 
@@ -42,23 +42,13 @@ export class MembersController {
             }
     }
 
-    @Get('all')
-    async get(): Promise<ApiResponse<GetMemberDto[]>>{
-        try{
-            const res = await this.memberService.get();
-            return ApiResponse.success<GetMemberDto[]>(res)
-        }catch(err){
-            return ApiResponse.error()
-        }
-    }
-
     @Put(':id')
     async update(@Param('id') id: string, @Body() update: UpdateMemberDto): Promise<ApiResponse<GetMemberDto>>{
         try{
             const res = await this.memberService.update(id, update);
             return ApiResponse.success<GetMemberDto>(res)
         }catch(err){
-            return ApiResponse.error()
+            return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
         }
     }
     

@@ -1,6 +1,8 @@
-import { IsString, IsBoolean, IsUUID, IsOptional } from "@nestjs/class-validator";
+import { IsString, IsBoolean, IsUUID, IsArray, IsOptional, ValidateNested } from "@nestjs/class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { BaseDto } from "@/common/dto/base.dto";
+import { Type } from "class-transformer";
+import { CreateRelatedPostDto } from "./create-related-post.dto";
 export class CreatePostDto extends BaseDto{
 
     @ApiProperty()
@@ -30,4 +32,12 @@ export class CreatePostDto extends BaseDto{
     @ApiProperty()
     @IsUUID()
     category_id: string; // Foreign key đến Categories (categories.id)
+
+    @ApiProperty({ type: [CreateRelatedPostDto], required: false })
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => CreateRelatedPostDto)
+    related_posts?: CreateRelatedPostDto[];
+
 }

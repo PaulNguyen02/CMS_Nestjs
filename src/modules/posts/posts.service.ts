@@ -5,18 +5,17 @@ import {
 import { 
     Cache, 
     CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Posts } from './entities/posts.entity';
 import { GetPostDto } from './dto/get-post.dto';
 import { CreatePostDto } from './dto/create-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
-import { IPostsService } from './posts.service.interface'; 
+import { UpdatePostDto } from './dto/update-post.dto'; 
 import { PaginationDto } from '@/common/dto/pagination.dto';
 @Injectable()
-export class PostsService implements IPostsService{
-    constructor(
+export class PostsService{
+    constructor(   
         @InjectRepository(Posts)
         private readonly postsRepository: Repository<Posts>,
         @Inject(CACHE_MANAGER) 
@@ -24,18 +23,35 @@ export class PostsService implements IPostsService{
     ) {}
 
     async create(dto: CreatePostDto): Promise<GetPostDto>{
-        const new_post = await this.postsRepository.create({
+        const relatedEntities = dto.related_posts?.map(r =>
+            this.postsRepository.create({
+            title: r.title,
+            slug: r.slug,
+            summary: r.summary,
+            content: r.content,
+            is_active: r.is_actived,
+            banner: r.banner,
+            category_id: r.category_id,
+            created_by: r.created_by,
+            created_at: new Date(),
+            })
+        ) || [];
+
+        const new_post = this.postsRepository.create({
             title: dto.title,
             slug: dto.slug,
             summary: dto.summary,
             content: dto.content,
-            isActive: dto.is_actived,
+            is_active: dto.is_actived,
             banner: dto.banner,
             category_id: dto.category_id,
+            created_by: dto.created_by,
             created_at: new Date(),
-            created_by: dto.created_by 
+            related_posts: relatedEntities,
         });
+
         const saved = await this.postsRepository.save(new_post);
+
         const res = plainToInstance(GetPostDto, saved, {
             excludeExtraneousValues: true,
         });
@@ -68,10 +84,9 @@ export class PostsService implements IPostsService{
             take: limit,
             skip: (page - 1) * limit,
             relations:[
-                'banners', 
-                'related_posts', 
-                'related_posts.related', 
-                'related_posts.related.banners'
+                'banners',
+                'related_posts',
+                'related_posts.banners',
             ],
             order: { created_at: 'DESC' }, // nếu có field createdAt
         });

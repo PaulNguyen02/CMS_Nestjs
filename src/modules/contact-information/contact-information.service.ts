@@ -12,9 +12,8 @@ import { GetInformationDto } from './dto/get-information.dto';
 import { CreateInformationDto } from './dto/create-information.dto';
 import { UpdateInformationDto } from './dto/update-information.dto';
 import { contactInformation } from './entities/contact-information.entity';
-import { IInformationService } from './contact-infomation.service.interface';
 @Injectable()
-export class ContactInformationService implements IInformationService{
+export class ContactInformationService {
 
     constructor(
             @InjectRepository(contactInformation)

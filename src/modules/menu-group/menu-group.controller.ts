@@ -14,13 +14,13 @@ import { ApiResponse } from '@/common/response/api-response';
 @Controller('menu-groups')
 export class MenuGroupsController {
     constructor(private readonly menugroupService: MenuGroupsService) {}
-    @Post('create')
+    @Post()
     async create(@Body() dto: CreateMenuGroupDto): Promise<ApiResponse<GetMenuGroupDto>>{
         try{
             const result = await this.menugroupService.create(dto);
             return ApiResponse.success<GetMenuGroupDto>(result);
         }catch(err){
-            return ApiResponse.error();
+            return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
         }
     }
 
@@ -40,7 +40,7 @@ export class MenuGroupsController {
             const res = await this.menugroupService.update(id, update);
             return ApiResponse.success<GetMenuGroupDto>(res)
         }catch(err){
-            return ApiResponse.error()
+            return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
         }
     }
     

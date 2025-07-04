@@ -17,7 +17,7 @@ import { uploadBody } from '@/common/const/upload-body.const';
 export class FilesController {
     constructor(private readonly fileService: FilesService) {}
 
-    @Post('file-upload')
+    @Post()
     @ApiConsumes('multipart/form-data')
     @ApiBody(uploadBody)
     @UseInterceptors(FileInterceptor('file', uploadOption))
@@ -31,7 +31,7 @@ export class FilesController {
             const result = await this.fileService.uploadFile(file_info);
             return ApiResponse.success<GetFileDto>(result);
         }catch(err){
-            return ApiResponse.error();
+            return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
         }        
     }
 }

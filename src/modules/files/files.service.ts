@@ -5,16 +5,15 @@ import { plainToInstance } from 'class-transformer';
 import { Files } from './entities/files.entity';
 import { GetFileDto } from './dto/get-file.dto';
 import { CreateFileDto } from './dto/create-file.dto';
-import { IFilesService } from './files.service.interface';
 @Injectable()
-export class FilesService implements IFilesService{
+export class FilesService{
     constructor(
     @InjectRepository(Files)
         private readonly imageRepo: Repository<Files>
     ) {}
 
     async uploadFile(file: CreateFileDto): Promise<GetFileDto>{
-        const url = `http://localhost:3000/localhost/uploads/${file.original_name}`;
+        const url = `https://localhost:3001/localhost/uploads/${file.original_name}`;
         const image = this.imageRepo.create({ 
             original_name: file.original_name,
             url: url,

@@ -2,6 +2,7 @@ import {
     Entity, 
     PrimaryGeneratedColumn, 
     Column,  
+    JoinColumn,
     ManyToOne } from "typeorm";
 import { BaseEntity } from "../../../common/entities/base.entity";
 import { Member } from "../../members/entities/members.entity";
@@ -17,12 +18,17 @@ export class workingHistory extends BaseEntity{
     @Column()
     description: string;
 
-    @Column()
+    @Column({ nullable: true })
     categories: string;
 
     @Column()
-    memberId: string;
+    member_id: string;
 
-    @ManyToOne(() => Member, (member) => member.working_history, { onDelete: 'CASCADE' })
+    @ManyToOne(
+        () => Member, 
+        (member) => member.working_history, 
+        { onDelete: 'CASCADE' }
+    )
+    @JoinColumn({ name: 'member_id' })
     member: Member;
 } 

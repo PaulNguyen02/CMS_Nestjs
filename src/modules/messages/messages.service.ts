@@ -12,9 +12,8 @@ import { Messages } from './entities/messages.entity';
 import { GetMessageDto } from "./dto/get-message.dto";
 import { CreateMessageDto } from './dto/create-message.dto';
 import { PaginationDto } from '@/common/dto/pagination.dto';
-import { IMessagesService } from './messages.service.interface';
 @Injectable()
-export class MessagesService implements IMessagesService{
+export class MessagesService{
 
     constructor(
         @InjectRepository(Messages)

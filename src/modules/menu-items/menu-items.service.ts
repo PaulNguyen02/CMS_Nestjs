@@ -12,9 +12,8 @@ import { menuItem } from './entities/menu-item.entity';
 import { GetMenuItemDto } from './dto/get-menuitem.dto';
 import { CreateMenuItemDto } from './dto/create-menuitem.dto';
 import { UpdateMenuItemDto } from './dto/update-menuitem.dto';
-import { IMenuItemsService } from './menu-items.service.interface';
 @Injectable()
-export class MenuItemsService implements IMenuItemsService{
+export class MenuItemsService{
 
     constructor(
         @InjectRepository(menuItem)
