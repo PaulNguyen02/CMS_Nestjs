@@ -17,10 +17,10 @@ export class menuItem extends BaseEntity{
     @Column()
     slug: string;
 
-    @Column()
-    group_id: string;
+    @Column({name:'group_id'})
+    groupId: string;
 
-    @ManyToOne(() => menuGroup, (menu_group) => menu_group.menu_item, { onDelete: 'CASCADE' })
+    @ManyToOne(() => menuGroup, (MenuGroup) => MenuGroup.MenuItem, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'group_id' }) 
-    menu_group: menuGroup;
+    MenuGroup: menuGroup;
 } 

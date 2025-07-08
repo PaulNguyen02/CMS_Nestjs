@@ -18,22 +18,22 @@ export class UserLoginService{
     }
 
     async getLoginProfile(username: string): Promise<GetUserLoginDto| null> {
-        const login_profile =  this.userRepository.findOne({ where: { username } });
-        const res = plainToInstance(GetUserLoginDto, login_profile, {
+        const loginProfile =  this.userRepository.findOne({ where: { username } });
+        const res = plainToInstance(GetUserLoginDto, loginProfile, {
             excludeExtraneousValues: true,
         });
         return res;
     }
 
-    async create(dto: CreateUserLoginDto, userAgent: string): Promise<GetUserLoginDto> {
+    async createNewProfile(dto: CreateUserLoginDto, userAgent: string): Promise<GetUserLoginDto> {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(dto.password, salt);
 
         const login = this.userRepository.create({
             username: dto.username,
             password: hashedPassword,
-            user_agent: userAgent,
-            login_at: new Date() 
+            userAgent: userAgent,
+            loginAt: new Date() 
         });
         const saved = await this.userRepository.save(login);
         const res = plainToInstance(GetUserLoginDto, saved, {
@@ -42,7 +42,7 @@ export class UserLoginService{
         return res;
     }
 
-    async get(): Promise<GetUserLoginDto[]>{
+    async getUsers(): Promise<GetUserLoginDto[]>{
         const res = await this.userRepository.find();
         return plainToInstance(GetUserLoginDto, res, {
             excludeExtraneousValues: true,
@@ -51,8 +51,8 @@ export class UserLoginService{
 
     async updateLoginMeta(userId: string, userAgent: string): Promise<void> {
         await this.userRepository.update(userId, {
-            user_agent: userAgent,
-            login_at: new Date(),
+            userAgent: userAgent,
+            loginAt: new Date(),
         });
     }
 }

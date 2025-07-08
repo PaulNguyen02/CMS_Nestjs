@@ -5,11 +5,11 @@ export class CreateMessageDto extends BaseDto{
 
     @ApiProperty()   
     @IsString()
-    fullname: string;
+    fullName: string;
 
     @ApiProperty()    
     @IsPhoneNumber()
-    phone_number: string;
+    phoneNumber: string;
 
     @ApiProperty()    
     @IsEmail()

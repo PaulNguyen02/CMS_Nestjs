@@ -27,14 +27,14 @@ export class Posts extends BaseEntity{
     @Column()
     content: string;
 
-    @Column()
-    is_active: boolean;
+    @Column({name:'is_active'})
+    isActive: boolean;
 
     @Column()
     banner: string;
 
-    @Column()
-    category_id: string;
+    @Column({name:'category_id'})
+    categoryId: string;
 
     @OneToOne(() => Files, file => file.posts, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'banner' }) // Ràng buộc khóa ngoại
@@ -44,7 +44,7 @@ export class Posts extends BaseEntity{
     @JoinColumn({ name: 'category_id' }) 
     categories: Categories;
 
-    @ManyToMany(() => Posts, post => post.related_by_posts,{cascade: true})
+    @ManyToMany(() => Posts, post => post.relatedByPosts,{cascade: true})
     @JoinTable({
         name: 'post_related_posts',
         joinColumn: {
@@ -56,10 +56,10 @@ export class Posts extends BaseEntity{
             referencedColumnName: 'id'
         }
     }) 
-    related_posts: Posts[];
+    relatedPosts: Posts[];
 
     // Inverse relationship - các post có related đến post này
-    @ManyToMany(() => Posts, post => post.related_posts)
-    related_by_posts: Posts[];    
+    @ManyToMany(() => Posts, post => post.relatedPosts)
+    relatedByPosts: Posts[];    
 
 }

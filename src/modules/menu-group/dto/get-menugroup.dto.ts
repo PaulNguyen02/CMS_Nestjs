@@ -1,6 +1,5 @@
-import { Expose, Type } from "class-transformer";
+import { Expose } from "class-transformer";
 import { GetBaseDto } from "@/common/dto/get-base.dto";
-import { GetMenuItemDto } from "@/modules/menu-items/dto/get-menuitem.dto";
 export class GetMenuGroupDto extends GetBaseDto{
     @Expose({ name: 'id' })
     id:string;

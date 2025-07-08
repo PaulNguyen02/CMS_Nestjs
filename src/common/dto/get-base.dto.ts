@@ -1,4 +1,8 @@
+import { Expose } from "class-transformer";
 export class GetBaseDto{
-    created_at: Date;
-    created_by: string;
+    @Expose({ name: 'createdAt' })
+    createdAt: Date;
+
+    @Expose({ name: 'createdBy' })
+    createdBy: string;
 }

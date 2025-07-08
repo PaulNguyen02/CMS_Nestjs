@@ -8,11 +8,11 @@ export class Messages extends BaseEntity{
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column()
-    fullname: string;
+    @Column({name:'fullname'})
+    fullName: string;
 
-    @Column()
-    phone_number: string;
+    @Column({name:'phone_number'})
+    phoneNumber: string;
 
     @Column()
     email: string;

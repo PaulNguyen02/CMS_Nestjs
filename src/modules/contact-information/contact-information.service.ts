@@ -22,29 +22,29 @@ export class ContactInformationService {
             private cacheManager: Cache
     ) {}
 
-    async create(dto: CreateInformationDto): Promise<GetInformationDto>{
-        const contact_info = await this.contactRepository.create({
+    async createInformation(dto: CreateInformationDto): Promise<GetInformationDto>{
+        const contactInfo = await this.contactRepository.create({
             key: dto.key,
             value: dto.value,
-            created_at: new Date(),
-            created_by: dto.created_by 
+            createdAt: new Date(),
+            createdBy: dto.createdBy 
         });
-        const saved = await this.contactRepository.save(contact_info);
+        const saved = await this.contactRepository.save(contactInfo);
         const res = plainToInstance(GetInformationDto, saved, {
             excludeExtraneousValues: true,
         });
         return res;
     };
 
-    async update (information_id: string, dto: UpdateInformationDto): Promise<GetInformationDto>{
+    async updateInformation (informationId: string, dto: UpdateInformationDto): Promise<GetInformationDto>{
         const existedInformation = await this.contactRepository.findOne({
-            where: { id: information_id }
+            where: { id: informationId }
         });       
         if (!existedInformation) {
             throw new NotFoundException('existed information not found');
         }
-        const new_info = plainToInstance(contactInformation, dto);
-        const update = this.contactRepository.merge(existedInformation,new_info);
+        const newInfo = plainToInstance(contactInformation, dto);
+        const update = this.contactRepository.merge(existedInformation,newInfo);
         const savedInfo = await this.contactRepository.save(update);
         const res = plainToInstance(GetInformationDto, savedInfo, {
             excludeExtraneousValues: true,
@@ -52,27 +52,27 @@ export class ContactInformationService {
         return res;
     }
 
-    async get(): Promise<GetInformationDto[]>{
+    async getInformation(): Promise<GetInformationDto[]>{
         const cached = await this.cacheManager.get<GetInformationDto[]>('information');
         if(cached){
             return cached;
         }
-        const contact_information = await this.contactRepository.find();
-        const res = plainToInstance(GetInformationDto, contact_information, {
+        const contactInformation = await this.contactRepository.find();
+        const res = plainToInstance(GetInformationDto, contactInformation, {
             excludeExtraneousValues: true,
         });
         await this.cacheManager.set('information', res, 60);
         return res;
     }
 
-    async delete(information_id: string): Promise<GetInformationDto>{
-        const contact_information = await this.contactRepository.findOne({ where: { id: information_id } });
+    async deleteInformation(informationId: string): Promise<GetInformationDto>{
+        const contactInformation = await this.contactRepository.findOne({ where: { id: informationId } });
         
-        if (!contact_information) {
-            throw new NotFoundException(`User with ID ${information_id} not found`);
+        if (!contactInformation) {
+            throw new NotFoundException(`User with ID ${informationId} not found`);
         }
         
-        const delete_information = await this.contactRepository.remove(contact_information); // hoặc .softRemove nếu có soft-delete
+        const delete_information = await this.contactRepository.remove(contactInformation); // hoặc .softRemove nếu có soft-delete
         const res = plainToInstance(GetInformationDto, delete_information,{
             excludeExtraneousValues: true,
         })

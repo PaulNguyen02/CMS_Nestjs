@@ -5,10 +5,10 @@ export class GetMessageDto extends GetBaseDto {
     id: string;
 
     @Expose({ name: 'fullname' })
-    fullname: string;
+    fullName: string;
 
-    @Expose({ name: 'phone_number' })
-    phone_number: string;
+    @Expose({ name: 'phoneNumber' })
+    phoneNumber: string;
 
     @Expose({ name: 'email' })
     email: string;

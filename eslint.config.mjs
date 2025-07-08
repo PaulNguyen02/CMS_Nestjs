@@ -1,34 +1,56 @@
-// @ts-check
-import eslint from '@eslint/js';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
+import js from "@eslint/js";
+import globals from "globals";
+import tseslint from "typescript-eslint";
+import { defineConfig } from "eslint/config";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
-export default tseslint.config(
+const __dirname = dirname(fileURLToPath(import.meta.url));
+export default defineConfig([
   {
-    ignores: ['eslint.config.mjs'],
+    ignores: [
+      "dist/**",
+      "node_modules/**",
+      "cert/**",
+      "test/**",
+      ".env",
+      ".env.*",
+      "**/*.spec.ts",
+      "**/*.js"
+    ],
   },
-  eslint.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
-  eslintPluginPrettierRecommended,
   {
+    files: ["**/*.{js,mjs,cjs,ts,mts,cts}"],
+    plugins: { js },
+    extends: ["js/recommended"],
+  },
+  {
+    files: ["**/*.js"],
+    languageOptions: { sourceType: "script" },
+  },
+  {
+    files: ["**/*.{js,mjs,cjs,ts,mts,cts}"],
+    languageOptions: { globals: globals.browser },
+  },
+  {
+    files: ["**/*.ts"],
     languageOptions: {
-      globals: {
-        ...globals.node,
-        ...globals.jest,
-      },
-      sourceType: 'commonjs',
+      parser: tseslint.parser,
       parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
+        project: "./tsconfig.json",
+        tsconfigRootDir: __dirname,
       },
+      globals: globals.node,
     },
-  },
-  {
+    plugins: {
+      "@typescript-eslint": tseslint.plugin,
+    },
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn'
+      ...tseslint.configs.recommended.rules,
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-explicit-any": "off", 
     },
   },
-);
+]);
+
+

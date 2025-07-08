@@ -14,25 +14,25 @@ export class WorkingHistoryController {
     constructor(private readonly workinghistoryService: WorkingHistoryService) {}
 
     @Put(':id')
-    async update(
+    async updateWorkingHistory(
         @Param('id') id: string, 
         @Body() update: UpdateWorkingHistoryDto
     ): Promise<ApiResponse<GetWorkingHistoryDto>>{
         try{
-            const res = await this.workinghistoryService.update(id, update);
+            const res = await this.workinghistoryService.updateWorkingHistory(id, update);
             return ApiResponse.success<GetWorkingHistoryDto>(res)
-        }catch(err){
+        }catch{
             return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
         }
     }
 
 
     @Delete(':id')
-    async delete(@Param('id') id: string): Promise<ApiResponse<GetWorkingHistoryDto>>{
+    async deleteWorkingHistory(@Param('id') id: string): Promise<ApiResponse<GetWorkingHistoryDto>>{
         try{
-            const res = await this.workinghistoryService.delete(id);
+            const res = await this.workinghistoryService.deleteWorkingHistory(id);
             return ApiResponse.success<GetWorkingHistoryDto>(res)
-        }catch(err){
+        }catch{
             return ApiResponse.error()
         }
     }

@@ -22,7 +22,7 @@ export class GetPostDto extends GetBaseDto{
     @Type(() => GetFileDto) 
     banner: GetFileDto;
 
-    @Expose()
+    @Expose({name: 'relatedPosts'})
     @Type(() => GetRelatedPostDto)
-    related_posts: GetRelatedPostDto[];
+    relatedPosts: GetRelatedPostDto[];
 }

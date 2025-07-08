@@ -1,20 +1,19 @@
 import { 
     Entity, 
     PrimaryGeneratedColumn, 
-    Column,
-    JoinColumn,  
+    Column,  
     OneToMany } from "typeorm";
 import { BaseEntity } from "../../../common/entities/base.entity";
 import { Files } from "../../files/entities/files.entity";
-import { workingHistory } from "../../working-history/entities/working-history.entity";
+import { WorkingHistory } from "../../working-history/entities/working-history.entity";
 @Entity('members')
 export class Member extends BaseEntity{
 
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column()
-    fullname: string;
+    @Column({name:'fullname'})
+    fullName: string;
 
     @Column()
     slug: string;
@@ -30,9 +29,9 @@ export class Member extends BaseEntity{
     files: Files[];
 
     @OneToMany(
-        () => workingHistory, 
-        (working_history) => working_history.member, 
+        () => WorkingHistory, 
+        (workingHistory) => workingHistory.member, 
         { cascade: true }
     )
-    working_history: workingHistory[];
+    workingHistory: WorkingHistory[];
 }

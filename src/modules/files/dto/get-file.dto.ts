@@ -6,13 +6,13 @@ export class GetFileDto extends GetBaseDto{
     id: string;
 
     @Expose({ name: 'original_name' })
-    original_name: string;
+    originalName: string;
 
     @Expose({ name: 'url' })
     url: string;
 
     @Expose({ name: 'member_id' })
-    member_id: string; 
+    memberId: string; 
     
     @Expose()
     @Type(() => GetMemberDto) // <-- ánh xạ nested object

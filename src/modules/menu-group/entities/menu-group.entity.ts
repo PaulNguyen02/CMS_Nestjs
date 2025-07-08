@@ -19,6 +19,6 @@ export class menuGroup extends BaseEntity{
     @Column()
     isfooter: boolean;
 
-    @OneToMany(() => menuItem, (menu_item) => menu_item.menu_group)
-    menu_item: menuItem[];
+    @OneToMany(() => menuItem, (MenuItem) => MenuItem.MenuGroup)
+    MenuItem: menuItem[];
 }

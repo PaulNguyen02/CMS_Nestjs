@@ -14,24 +14,24 @@ export class LoginController {
     constructor(private readonly userLoginService: UserLoginService) {}
 
     @Post()
-    async create(
+    async createNewUser(
         @Body() dto: CreateUserLoginDto, 
         @Headers('user-agent') userAgent: string
     ): Promise<ApiResponse<GetUserLoginDto>>{
         try{
-            const result = await this.userLoginService.create(dto, userAgent);
+            const result = await this.userLoginService.createNewProfile(dto, userAgent);
             return ApiResponse.success<GetUserLoginDto>(result);
-        }catch(err){
+        }catch{
             return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
         }
     }
 
     @Get()
-    async get(): Promise<ApiResponse<GetUserLoginDto[]>> {
+    async getUsers(): Promise<ApiResponse<GetUserLoginDto[]>> {
         try{
-            const result = await this.userLoginService.get();
+            const result = await this.userLoginService.getUsers();
             return ApiResponse.success<GetUserLoginDto[]>(result);
-        }catch(err){
+        }catch{
             return ApiResponse.error();
         }
     }

@@ -18,10 +18,10 @@ export class followUs extends BaseEntity{
     @Column()
     url: string;
 
-    @Column()
-    file_id: string;
+    @Column({name: 'file_id'})
+    fileId: string;
 
-    @OneToOne(() => Files, file => file.follow_us, { onDelete: 'CASCADE' })
+    @OneToOne(() => Files, file => file.followUs, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'file_id' }) // Ràng buộc khóa ngoại
     file: Files;
 }

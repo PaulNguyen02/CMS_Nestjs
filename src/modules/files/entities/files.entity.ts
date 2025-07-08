@@ -16,14 +16,14 @@ export class Files extends BaseEntity{
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column()
-    original_name: string;
+    @Column({name: 'original_name'})
+    originalName: string;
 
     @Column()
     url: string;
 
-    @Column()
-    member_id?: string;
+    @Column({name: 'member_id'})
+    memberId?: string;
 
     @OneToOne(() => Partners, partner => partner.file)
     partner: Partners;
@@ -31,8 +31,8 @@ export class Files extends BaseEntity{
     @OneToOne(() => Posts, posts => posts.banner)
     posts: Posts;
 
-    @OneToOne(() => followUs, follow_us => follow_us.file)
-    follow_us: followUs;
+    @OneToOne(() => followUs, followUs => followUs.file)
+    followUs: followUs;
 
     @ManyToOne(() => Member, (member) => member.files, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'member_id' })

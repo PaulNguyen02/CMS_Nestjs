@@ -1,13 +1,12 @@
 import {
-  CreateDateColumn,
   Column
 } from 'typeorm';
 export abstract class BaseEntity{
 
-    @CreateDateColumn()
-    created_at: Date;
+    @Column({name: 'created_at'})
+    createdAt: Date;
     
-    @Column()
-    created_by: string ;
+    @Column({name: 'created_by'})
+    createdBy: string ;
 
 }

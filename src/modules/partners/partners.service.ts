@@ -15,6 +15,7 @@ import { GetPartnerDto } from './dto/get-partner.dto';
 import { UpdatePartnerDto } from './dto/update-partner.dto';
 import { CreatePartnerDto } from './dto/create-partner.dto';
 import { PaginationDto } from '@/common/dto/pagination.dto';
+import { PartnerParam } from './dto/partner-param.dto';
 @Injectable()
 export class PartnersService{
 
@@ -25,24 +26,24 @@ export class PartnersService{
         private cacheManager: Cache
     ) {}
 
-    async create(dto: CreatePartnerDto): Promise<GetPartnerDto>{
-        const new_partner = await this.partnerRepository.create({
+    async createPartner(dto: CreatePartnerDto): Promise<GetPartnerDto>{
+        const newPartner = await this.partnerRepository.create({
             name: dto.title,
             url: dto.url,
-            file_id: dto.file_id,
-            created_at: new Date(),
-            created_by: dto.created_by 
+            fileId: dto.fileId,
+            createdAt: new Date(),
+            createdBy: dto.createdBy 
         });
-        const saved = await this.partnerRepository.save(new_partner);
+        const saved = await this.partnerRepository.save(newPartner);
         const res = plainToInstance(GetPartnerDto, saved, {
             excludeExtraneousValues: true,
         });
         return res;
     }
 
-    async update (partner_id: string, dto: UpdatePartnerDto): Promise<GetPartnerDto>{
+    async updatePartner(partnerId: string, dto: UpdatePartnerDto): Promise<GetPartnerDto>{
         const existedPartner = await this.partnerRepository.findOne({
-            where: { id: partner_id }
+            where: { id: partnerId }
         });       
         if (!existedPartner) {
             throw new NotFoundException('Partner not found');
@@ -57,7 +58,7 @@ export class PartnersService{
         return res;
     }
 
-    async get(): Promise<GetPartnerDto[]>{
+    async getPartner(): Promise<GetPartnerDto[]>{
         const cached = await this.cacheManager.get<GetPartnerDto[]>('partners/all');
         if(cached){
             return cached;
@@ -70,40 +71,40 @@ export class PartnersService{
         return res;
     }
     
-    async paginate(page: number, limit: number): Promise<PaginationDto<GetPartnerDto>>{
-        const cached = await this.cacheManager.get<PaginationDto<GetPartnerDto>>('partners');
-        if(cached){
-            return cached;
-        }
-        const [posts, total] = await this.partnerRepository.findAndCount({
-            take: limit,
-            skip: (page - 1) * limit,
-            relations:[
-                'file'
-            ],
-            order: { created_at: 'DESC' }, // nếu có field createdAt
-        });
+    async getPaginatePartner(query: PartnerParam): Promise<PaginationDto<GetPartnerDto>>{
+        const { page = 1, limit = 10, search } = query;
+        const qb = this.partnerRepository.createQueryBuilder('partner');
 
-        const data = plainToInstance(GetPartnerDto, posts, {
+        if (search) {
+            qb.andWhere(
+                'partner.name LIKE :search',
+                { search: `%${search}%` },
+            );
+        }
+        qb.orderBy('partner.created_at', 'DESC');
+
+        const allPartners = await qb.getMany(); 
+        const total = allPartners.length;
+        const start = (page - 1) * limit;
+        const paginatedPartners = allPartners.slice(start, start + limit);
+        const data = plainToInstance(GetPartnerDto, paginatedPartners, {
             excludeExtraneousValues: true,
         });
-
         const res = new PaginationDto<GetPartnerDto>({
             data,
             total,
             page,
             lastPage: Math.ceil(total / limit),
         });
-        await this.cacheManager.set('partners', res, 60);
-        return res;        
+        return res;                 
     }
 
 
-    async delete(partner_id: string): Promise<GetPartnerDto>{
-        const partner = await this.partnerRepository.findOne({ where: { id: partner_id } });
+    async deletePartner(partnerId: string): Promise<GetPartnerDto>{
+        const partner = await this.partnerRepository.findOne({ where: { id: partnerId } });
 
         if (!partner) {
-            throw new NotFoundException(`User with ID ${partner_id} not found`);
+            throw new NotFoundException(`User with ID ${partnerId} not found`);
         }
 
         const delete_partner = await this.partnerRepository.remove(partner); // hoặc .softRemove nếu có soft-delete
