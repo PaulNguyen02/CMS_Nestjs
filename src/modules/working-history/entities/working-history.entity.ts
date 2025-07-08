@@ -8,7 +8,7 @@ import { BaseEntity } from "../../../common/entities/base.entity";
 import { Member } from "../../members/entities/members.entity";
 
 @Entity('working_history')
-export class workingHistory extends BaseEntity{
+export class WorkingHistory extends BaseEntity{
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
@@ -21,12 +21,12 @@ export class workingHistory extends BaseEntity{
     @Column({ nullable: true })
     categories: string;
 
-    @Column()
-    member_id: string;
+    @Column({name:'member_id'})
+    memberId: string;
 
     @ManyToOne(
         () => Member, 
-        (member) => member.working_history, 
+        (member) => member.workingHistory, // phải trùng tên field ở Member
         { onDelete: 'CASCADE' }
     )
     @JoinColumn({ name: 'member_id' })

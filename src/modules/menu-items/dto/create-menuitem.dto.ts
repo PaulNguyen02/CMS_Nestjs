@@ -1,4 +1,4 @@
-import { IsString, IsUUID, IsOptional } from "@nestjs/class-validator";
+import { IsString, IsOptional } from "@nestjs/class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { BaseDto } from "@/common/dto/base.dto";
 export class CreateMenuItemDto extends BaseDto{
@@ -12,8 +12,8 @@ export class CreateMenuItemDto extends BaseDto{
     name: string;
 
     @ApiProperty()
-    @IsUUID()
+    @IsString()
     @IsOptional()
-    group_id: string; 
+    groupId: string; 
 
 }

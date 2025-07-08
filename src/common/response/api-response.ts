@@ -3,20 +3,25 @@ import { HttpStatus } from "@nestjs/common";
 export class ApiResponse<T> {
   code: number;
   message: string;
-  data: T | T[] | null;
+  response: T | T[] | null;
 
-  constructor(code: number, message: string, data: T | T[] | null = null) {
+  constructor(code: number, message: string, response: T | T[] | null = null) {
     this.code = code;
     this.message = message;
-    this.data = data;
+    this.response = response;
   }
 
-  static success<T>(data: T | T[]): ApiResponse<T> {
-    return new ApiResponse(HttpStatus.OK, ResponseCode.SUCCESS, data);
+  static success<T>(response: T | T[]): ApiResponse<T> {
+    return new ApiResponse(HttpStatus.OK, ResponseCode.SUCCESS, response);
   }
 
-  static error<T = null>(): ApiResponse<T> {
-    return new ApiResponse<T>(HttpStatus.INTERNAL_SERVER_ERROR, ResponseCode.SERVER_ERROR, null);
+
+  static error<T = null>(options?: { code?: number; message?: string }): ApiResponse<T> {
+    return new ApiResponse<T>(
+      options?.code ?? HttpStatus.INTERNAL_SERVER_ERROR,
+      options?.message ?? ResponseCode.SERVER_ERROR,
+      null,
+    );
   }
 
   static validationError(errors: { field: string; error: string }[]): ApiResponse<any> {

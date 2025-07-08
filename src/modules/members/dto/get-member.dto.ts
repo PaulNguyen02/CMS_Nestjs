@@ -19,7 +19,7 @@ export class GetMemberDto extends GetBaseDto{
     @Type(() => GetFileDto )
     files: GetFileDto[];
 
-    @Expose({ name: 'working_history' })
+    @Expose({ name: 'workingHistory' })
     @Type(() => GetWorkingHistoryDto )
-    working_history: GetWorkingHistoryDto[];
+    workingHistory: GetWorkingHistoryDto[];
 }

@@ -1,5 +1,4 @@
 import { Expose, Type } from "class-transformer";
-import { GetBaseDto } from "@/common/dto/get-base.dto";
 import { GetFileDto } from "@/modules/files/dto/get-file.dto";
 export class GetRelatedPostDto {
     @Expose({ name: 'id' })

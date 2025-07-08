@@ -5,9 +5,7 @@ import { Controller,
     Delete,
     Query,
     Param,
-    Body,
-    ParseIntPipe,
-    DefaultValuePipe  
+    Body 
 } from '@nestjs/common';
 import { PartnersService } from './partners.service';
 import { GetPartnerDto } from './dto/get-partner.dto';
@@ -15,63 +13,60 @@ import { CreatePartnerDto } from './dto/create-partner.dto';
 import { UpdatePartnerDto } from './dto/update-partner.dto';
 import { PaginationDto } from '@/common/dto/pagination.dto';
 import { ApiResponse } from '@/common/response/api-response';
+import { PartnerParam } from './dto/partner-param.dto';
 @Controller('partners')
 export class PartnersController {
     constructor(private readonly partnerService: PartnersService) {}
     @Post()
-    async create(@Body() dto: CreatePartnerDto): Promise<ApiResponse<GetPartnerDto>>{
+    async createPartner(@Body() dto: CreatePartnerDto): Promise<ApiResponse<GetPartnerDto>>{
         try{
-            const result = await this.partnerService.create(dto);
+            const result = await this.partnerService.createPartner(dto);
             return ApiResponse.success<GetPartnerDto>(result);
-        }catch(err){
+        }catch{
             return ApiResponse.error();
         }
     }
 
     @Get('all')
-    async get(): Promise<ApiResponse<GetPartnerDto[]>>{
+    async getAllPartner(): Promise<ApiResponse<GetPartnerDto[]>>{
         try{
-            const res = await this.partnerService.get();
+            const res = await this.partnerService.getPartner();
             return ApiResponse.success<GetPartnerDto[]>(res)
-        }catch(err){
+        }catch{
             return ApiResponse.error()
         }
     }
 
     @Get()
-    async paginate(
-        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-    ) : Promise<ApiResponse<PaginationDto<GetPartnerDto>>>{
+    async getPaginatePartner(@Query() query: PartnerParam) : Promise<ApiResponse<PaginationDto<GetPartnerDto>>>{
         try{
-            const res = await this.partnerService.paginate(page,limit);
+            const res = await this.partnerService.getPaginatePartner(query);
             return ApiResponse.success<PaginationDto<GetPartnerDto>>(res)
-        }catch(err){
+        }catch{
             return ApiResponse.error()
         }
     }
 
-
     @Put(':id')
-    async update(
+    async updatePartner(
         @Param('id') id: string, 
         @Body() update: UpdatePartnerDto 
     ): Promise<ApiResponse<GetPartnerDto>>{
         try{
-            const res = await this.partnerService.update(id, update);
+            const res = await this.partnerService.updatePartner(id, update);
             return ApiResponse.success<GetPartnerDto>(res)
-        }catch(err){
+        }catch{
             return ApiResponse.error()
         }
     }
 
 
     @Delete(':id')
-    async delete(@Param('id') id: string): Promise<ApiResponse<GetPartnerDto>>{
+    async deletePartner(@Param('id') id: string): Promise<ApiResponse<GetPartnerDto>>{
         try{
-            const res = await this.partnerService.delete(id);
+            const res = await this.partnerService.deletePartner(id);
             return ApiResponse.success<GetPartnerDto>(res)
-        }catch(err){
+        }catch{
             return ApiResponse.error()
         }
     }

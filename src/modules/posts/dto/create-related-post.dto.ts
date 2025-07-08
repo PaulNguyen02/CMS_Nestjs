@@ -1,4 +1,4 @@
-import { IsString, IsBoolean, IsUUID, IsArray, IsOptional } from "@nestjs/class-validator";
+import { IsString, IsBoolean} from "@nestjs/class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { BaseDto } from "@/common/dto/base.dto";
 export class CreateRelatedPostDto extends BaseDto{
@@ -21,14 +21,14 @@ export class CreateRelatedPostDto extends BaseDto{
 
     @ApiProperty()
     @IsBoolean()
-    is_actived: boolean;
+    isActived: boolean;
 
     @ApiProperty()
-    @IsUUID()
+    @IsString()
     banner: string; 
 
     @ApiProperty()
-    @IsUUID()
-    category_id: string; 
+    @IsString()
+    categoryId: string; 
 
 }

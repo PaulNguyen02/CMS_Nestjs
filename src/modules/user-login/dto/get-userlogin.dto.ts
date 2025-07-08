@@ -7,8 +7,8 @@ export class GetUserLoginDto {
     username: string;
 
     @Expose({ name: 'user_agent' })
-    user_agent: string;
+    userAgent: string;
     
     @Expose({ name: 'login_at' })
-    login_at: Date;
+    loginAt: Date;
 }

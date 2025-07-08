@@ -15,10 +15,10 @@ export class userLogin{
     @Column()
     password: string;
 
-    @Column()
-    user_agent: string;
+    @Column({name:'user_agent'})
+    userAgent: string;
 
-    @UpdateDateColumn()
-    login_at: Date;
+    @UpdateDateColumn({name:'login_at'})
+    loginAt: Date;
     
 }

@@ -13,6 +13,6 @@ export class CreatePartnerDto extends BaseDto{
 
     @ApiProperty()
     @IsString()    
-    file_id: string;
+    fileId: string;
 
 }

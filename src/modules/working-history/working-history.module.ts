@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WorkingHistoryService } from './working-history.service';
-import { workingHistory } from './entities/working-history.entity';
+import { WorkingHistory } from './entities/working-history.entity';
 import { WorkingHistoryController } from './working-history.controller';
 @Module({
-  imports: [TypeOrmModule.forFeature([workingHistory])],
+  imports: [TypeOrmModule.forFeature([WorkingHistory])],
   controllers: [WorkingHistoryController],
   providers: [WorkingHistoryService]
 })

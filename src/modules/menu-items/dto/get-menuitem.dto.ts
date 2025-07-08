@@ -13,5 +13,5 @@ export class GetMenuItemDto extends GetBaseDto{
 
     @Expose()
     @Type(() => GetMenuGroupDto) // <-- ánh xạ nested object
-    menu_group: GetMenuGroupDto;
+    menuGroup: GetMenuGroupDto;
 }

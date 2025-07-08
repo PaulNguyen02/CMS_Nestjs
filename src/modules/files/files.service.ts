@@ -13,13 +13,13 @@ export class FilesService{
     ) {}
 
     async uploadFile(file: CreateFileDto): Promise<GetFileDto>{
-        const url = `https://localhost:3001/localhost/uploads/${file.original_name}`;
+        const url = `https://localhost:3001/localhost/uploads/${file.originalName}`;
         const image = this.imageRepo.create({ 
-            original_name: file.original_name,
+            originalName: file.originalName,
             url: url,
-            member_id: file.member_id,
-            created_at: new Date(),
-            created_by: file.created_by            
+            memberId: file.memberId,
+            createdAt: new Date(),
+            createdBy: file.createdBy            
         });
         const saved = await this.imageRepo.save(image);
         return plainToInstance(GetFileDto, saved, {

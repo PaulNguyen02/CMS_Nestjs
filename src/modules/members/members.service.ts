@@ -11,28 +11,27 @@ import { GetMemberDto } from './dto/get-member.dto';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
 import { PaginationDto } from '@/common/dto/pagination.dto';
+import { MemberParam } from './dto/member-param.dto';
 @Injectable()
 export class MembersService{
 
     constructor(
         @InjectRepository(Member)
-        private readonly memberRepository: Repository<Member>,
-        @Inject(CACHE_MANAGER) 
-        private cacheManager: Cache
+        private readonly memberRepository: Repository<Member>
     ) {}
 
-    async create(dto: CreateMemberDto): Promise<GetMemberDto>{
+    async createMember(dto: CreateMemberDto): Promise<GetMemberDto>{
         const member = await this.memberRepository.create({
-            fullname: dto.fullname,
+            fullName: dto.fullName,
             slug: dto.slug,
             position: dto.position,
-            created_at: new Date(),
-            created_by: dto.created_by,
+            createdAt: new Date(),
+            createdBy: dto.createdBy,
 
-            working_history: dto.working_history?.map(history => ({
+            workingHistory: dto.workingHistory.map(history => ({
                 ...history,
-                created_at: new Date(),
-                created_by: dto.created_by,
+                createdAt: new Date(),
+                createdBy: dto.createdBy,
             })),
         });
         const saved = await this.memberRepository.save(member);
@@ -42,9 +41,9 @@ export class MembersService{
         return res;
     }
 
-    async update (member_id: string, dto: UpdateMemberDto): Promise<GetMemberDto>{
+    async updateMember(memberId: string, dto: UpdateMemberDto): Promise<GetMemberDto>{
         const existedMember = await this.memberRepository.findOne({
-            where: { id: member_id }
+            where: { id: memberId }
         });       
         if (!existedMember) {
             throw new NotFoundException('Member not found');
@@ -58,38 +57,42 @@ export class MembersService{
         return res;
     }
 
-    async paginate(page: number, limit: number): Promise<PaginationDto<GetMemberDto>>{
-        const cached = await this.cacheManager.get<PaginationDto<GetMemberDto>>('member');
-        if(cached){
-            return cached;
-        }
-        const [posts, total] = await this.memberRepository.findAndCount({
-            take: limit,
-            skip: (page - 1) * limit,
-            relations:[
-                'files', 
-                'working_history'
-            ],
-            order: { created_at: 'DESC' }, // nếu có field createdAt
-        });
+    async getPaginateMember(query: MemberParam): Promise<PaginationDto<GetMemberDto>>{
+        const { page = 1, limit = 10, search } = query;
 
-        const data = plainToInstance(GetMemberDto, posts, {
+        const qb = this.memberRepository
+            .createQueryBuilder('member')
+            .leftJoinAndSelect('member.files', 'files')
+            .leftJoinAndSelect('member.workingHistory', 'workingHistory')
+        if (search) {
+            qb.andWhere(
+                'member.fullname LIKE :search OR member.position LIKE :search',
+                { search: `%${search}%` },
+            );
+        }
+
+        qb.orderBy('member.created_at', 'DESC');
+
+        const allMembers = await qb.getMany(); 
+
+        const total = allMembers.length;
+        const start = (page - 1) * limit;
+        const paginatedMembers = allMembers.slice(start, start + limit);
+        const data = plainToInstance(GetMemberDto, paginatedMembers, {
             excludeExtraneousValues: true,
         });
-
         const res = new PaginationDto<GetMemberDto>({
             data,
             total,
             page,
             lastPage: Math.ceil(total / limit),
         });
-        await this.cacheManager.set('member', res, 60);
-        return res;
+        return res;        
     }
 
-    async findOne(member_id: string): Promise<GetMemberDto>{
+    async findMemberbyId(memberId: string): Promise<GetMemberDto>{
         const existedMember = await this.memberRepository.findOne({
-            where: { id: member_id },
+            where: { id: memberId },
             relations:[
                 'files', 
                 'working_history'
@@ -101,10 +104,10 @@ export class MembersService{
         return res;
     }
 
-    async delete(member_id: string): Promise<GetMemberDto>{
-        const member = await this.memberRepository.findOne({ where: { id: member_id } });        
+    async deleteMember(memberId: string): Promise<GetMemberDto>{
+        const member = await this.memberRepository.findOne({ where: { id: memberId } });        
         if (!member) {
-            throw new NotFoundException(`User with ID ${member_id} not found`);
+            throw new NotFoundException(`User with ID ${memberId} not found`);
         }        
         const delete_member = await this.memberRepository.remove(member); // hoặc .softRemove nếu có soft-delete
         const res = plainToInstance(GetMemberDto, delete_member,{

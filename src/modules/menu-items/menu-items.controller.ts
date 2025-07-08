@@ -17,41 +17,41 @@ export class MenuItemsController {
     constructor(private readonly menuitemService: MenuItemsService) {}
 
     @Post()
-    async create(@Body() dto: CreateMenuItemDto): Promise<ApiResponse<GetMenuItemDto>>{
+    async createMenuItem(@Body() dto: CreateMenuItemDto): Promise<ApiResponse<GetMenuItemDto>>{
         try{
-            const result = await this.menuitemService.create(dto);
+            const result = await this.menuitemService.createMenuItem(dto);
             return ApiResponse.success<GetMenuItemDto>(result);
-        }catch(err){
+        }catch{
             return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
         }
     }
 
     @Get()
-    async get(): Promise<ApiResponse<GetMenuItemDto[]>>{
+    async getMenuItem(): Promise<ApiResponse<GetMenuItemDto[]>>{
         try{
-            const res = await this.menuitemService.get();
+            const res = await this.menuitemService.getMenuItem();
             return ApiResponse.success<GetMenuItemDto[]>(res)
-        }catch(err){
+        }catch{
             return ApiResponse.error()
         }
     }
     
     @Put(':id')
-    async update(@Param('id') id: string, @Body() update: UpdateMenuItemDto): Promise<ApiResponse<GetMenuItemDto>>{
+    async updateMenuItem(@Param('id') id: string, @Body() update: UpdateMenuItemDto): Promise<ApiResponse<GetMenuItemDto>>{
         try{
-            const res = await this.menuitemService.update(id, update);
+            const res = await this.menuitemService.updateMenuItem(id, update);
             return ApiResponse.success<GetMenuItemDto>(res)
-        }catch(err){
+        }catch{
             return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
         }
     }
     
     @Delete(':id')
-    async delete(@Param('id') id: string): Promise<ApiResponse<GetMenuItemDto>>{
+    async deleteMenuItem(@Param('id') id: string): Promise<ApiResponse<GetMenuItemDto>>{
         try{
-            const res = await this.menuitemService.delete(id);
+            const res = await this.menuitemService.deleteMenuItem(id);
             return ApiResponse.success<GetMenuItemDto>(res)
-        }catch(err){
+        }catch{
             return ApiResponse.error()
         }
     }

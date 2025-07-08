@@ -16,61 +16,59 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { ApiResponse } from '@/common/response/api-response';
 import { PaginationDto } from '@/common/dto/pagination.dto';
+import { PostParam } from './dto/post-param.dto';
 @Controller('posts')
 export class PostsController {
     constructor (private readonly postService: PostsService){}
     @Post()
-    async create(@Body() dto: CreatePostDto): Promise<ApiResponse<GetPostDto>>{
+    async createPost(@Body() dto: CreatePostDto): Promise<ApiResponse<GetPostDto>>{
         try{
-            const result = await this.postService.create(dto);
+            const result = await this.postService.createPost(dto);
             return ApiResponse.success<GetPostDto>(result);
-        }catch(err){
+        }catch{
             return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
         }
     }
 
     @Get()
-    async paginate(
-        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-    ) : Promise<ApiResponse<PaginationDto<GetPostDto>>>{
+    async getPaginatePost(@Query() query: PostParam): Promise<ApiResponse<PaginationDto<GetPostDto>>>{
         try{
-            const res = await this.postService.paginate(page,limit);
+            const res = await this.postService.getPaginatePost(query);
             return ApiResponse.success<PaginationDto<GetPostDto>>(res)
-        }catch(err){
+        }catch{
             return ApiResponse.error()
         }
     }
 
     @Put(':id')
-    async update(
+    async updatePost(
         @Param('id') id: string, 
         @Body() update: UpdatePostDto 
     ): Promise<ApiResponse<GetPostDto>>{
         try{
-            const res = await this.postService.update(id, update);
+            const res = await this.postService.updatePost(id, update);
             return ApiResponse.success<GetPostDto>(res)
-        }catch(err){
+        }catch{
             return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
         }
     }
 
     @Get(':id')
-    async findOne(@Param('id') id: string): Promise<ApiResponse<GetPostDto>>{
+    async findPostbyId(@Param('id') id: string): Promise<ApiResponse<GetPostDto>>{
         try{
-            const res = await this.postService.findOne(id);
+            const res = await this.postService.findPostbyId(id);
             return ApiResponse.success<GetPostDto>(res)
-        }catch(err){
+        }catch{
             return ApiResponse.error()
         }
     }
 
     @Delete(':id')
-    async delete(@Param('id') id: string): Promise<ApiResponse<GetPostDto>>{
+    async deletePost(@Param('id') id: string): Promise<ApiResponse<GetPostDto>>{
         try{
-            const res = await this.postService.delete(id);
+            const res = await this.postService.deletePost(id);
             return ApiResponse.success<GetPostDto>(res)
-        }catch(err){
+        }catch{
             return ApiResponse.error()
         }
     }

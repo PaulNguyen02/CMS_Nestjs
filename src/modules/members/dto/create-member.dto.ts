@@ -11,7 +11,7 @@ export class CreateMemberDto extends BaseDto{
     
     @ApiProperty()
     @IsString()    
-    fullname: string;
+    fullName: string;
     
     @ApiProperty()
     @IsString()
@@ -21,5 +21,5 @@ export class CreateMemberDto extends BaseDto{
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => CreateWorkingHistoryDto)
-    working_history: CreateWorkingHistoryDto[];
+    workingHistory: CreateWorkingHistoryDto[];
 }
