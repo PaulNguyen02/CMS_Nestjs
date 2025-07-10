@@ -1,8 +1,9 @@
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import { JwtService } from '@nestjs/jwt';
 import { userLogin } from './entities/user-login.entity';
 import { GetUserLoginDto } from './dto/get-userlogin.dto';
 import { CreateUserLoginDto } from './dto/create-userlogin.dto';
@@ -11,6 +12,7 @@ export class UserLoginService{
     constructor(
         @InjectRepository(userLogin)
         private readonly userRepository: Repository<userLogin>,
+        private readonly jwtService: JwtService
     ) {}
 
     async findByUsername(username: string): Promise<userLogin | null> {
@@ -25,24 +27,40 @@ export class UserLoginService{
         return res;
     }
 
-    async createNewProfile(dto: CreateUserLoginDto, userAgent: string): Promise<GetUserLoginDto> {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(dto.password, salt);
+    async Login(dto: CreateUserLoginDto, userAgent: string): Promise<string> {
+        const { username, password} = dto;
 
-        const login = this.userRepository.create({
-            username: dto.username,
-            password: hashedPassword,
-            userAgent: userAgent,
-            loginAt: new Date() 
+        let user = await this.userRepository.findOne({
+            where: { username },
         });
-        const saved = await this.userRepository.save(login);
-        const res = plainToInstance(GetUserLoginDto, saved, {
-            excludeExtraneousValues: true,
-        });
-        return res;
+
+        if(!user){
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(dto.password, salt);
+    
+            const login = this.userRepository.create({
+                username: dto.username,
+                password: hashedPassword,
+                userAgent: userAgent,
+                loginAt: new Date() 
+            });
+            user = await this.userRepository.save(login);
+        }else{
+            const isMatch = await bcrypt.compare(password, user.password);
+            if (!isMatch) {
+            throw new UnauthorizedException('Sai mật khẩu');
+            }
+            await this.userRepository.update(user.id, {
+                userAgent,
+                loginAt: new Date(),
+            });
+        }
+        const payload = { sub: user.id, username: user.username };
+        const token = this.jwtService.sign(payload);
+        return token
     }
 
-    async getUsers(): Promise<GetUserLoginDto[]>{
+    async getLoginHistory(): Promise<GetUserLoginDto[]>{
         const res = await this.userRepository.find();
         return plainToInstance(GetUserLoginDto, res, {
             excludeExtraneousValues: true,

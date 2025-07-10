@@ -20,19 +20,22 @@ export class WorkingHistoryService {
     ) {}
 
 
-    async updateWorkingHistory(workingHistoryId: string, dto: UpdateWorkingHistoryDto): Promise<GetWorkingHistoryDto>{
-        const existedWorkingHistory = await this.historyRepository.findOne({
+    async updateWorkingHistory(
+        workingHistoryId: string, 
+        dto: UpdateWorkingHistoryDto,
+        username: string
+    ): Promise<GetWorkingHistoryDto>{
+        await this.historyRepository.update(workingHistoryId, {
+            ...dto,
+            createdAt: new Date(),
+            createdBy: username
+        });
+        const updatedWorkingHistory = await this.historyRepository.findOne({
             where: { id: workingHistoryId }
-        });       
-        if (!existedWorkingHistory) {
-            throw new NotFoundException('Không tìm thấy thông tin');
-        }
-        const newWorkingHistory = plainToInstance(WorkingHistory, dto);
-        const update = this.historyRepository.merge(existedWorkingHistory, newWorkingHistory);
-        const saved_wh = await this.historyRepository.save(update);
-        const res = plainToInstance(GetWorkingHistoryDto, saved_wh, {
+        });
+        const res = plainToInstance(GetWorkingHistoryDto, updatedWorkingHistory, {
             excludeExtraneousValues: true,
-        });        
+        });
         return res;
     }
 

@@ -23,14 +23,14 @@ export class MessagesService{
         private cacheManager: Cache
     ) {}
 
-    async createMessage(dto: CreateMessageDto): Promise<GetMessageDto>{
+    async createMessage(dto: CreateMessageDto, username: string): Promise<GetMessageDto>{
         const newMessage = await this.messageRepository.create({
             fullName: dto.fullName,
             phoneNumber: dto.phoneNumber,
             email: dto.email,
             content: dto.content,
             createdAt: new Date(),
-            createdBy: dto.createdBy 
+            createdBy: username 
         });
         const saved = await this.messageRepository.save(newMessage);
         const res = plainToInstance(GetMessageDto, saved, {
@@ -50,15 +50,9 @@ export class MessagesService{
                 { search: `%${search}%` },
             );
         }
-
-        qb.orderBy('message.created_at', 'DESC');
-
-        const allMessages = await qb.getMany(); 
-
-        const total = allMessages.length;
-        const start = (page - 1) * limit;
-        const paginatedMessages = allMessages.slice(start, start + limit);
-        const data = plainToInstance(GetMessageDto, paginatedMessages, {
+        qb.orderBy('message.created_at', 'DESC').skip((page-1)*limit).take(limit);
+        const [items, total] = await qb.getManyAndCount();
+        const data = plainToInstance(GetMessageDto, items, {
             excludeExtraneousValues: true,
         });
         const res = new PaginationDto<GetMessageDto>({

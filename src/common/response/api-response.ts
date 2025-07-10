@@ -24,7 +24,23 @@ export class ApiResponse<T> {
     );
   }
 
-  static validationError(errors: { field: string; error: string }[]): ApiResponse<any> {
+  static duplicateData(): ApiResponse<null> {
+    return ApiResponse.error({ code: HttpStatus.BAD_REQUEST, message: 'Dữ liệu đã tồn tại (duplicate key)' });
+  }
+
+  static unauthorized(message?: string): ApiResponse<null> {
+    return ApiResponse.error({ code: HttpStatus.UNAUTHORIZED, message: message ?? 'Unauthorized' });
+  }
+
+  static notFound(message?: string): ApiResponse<null> {
+    return ApiResponse.error({ code: HttpStatus.NOT_FOUND, message: message ?? 'Resource not found' });
+  }
+
+  static internalError(message?: string): ApiResponse<null> {
+    return ApiResponse.error({ code: HttpStatus.INTERNAL_SERVER_ERROR, message: message ?? 'Internal server error' });
+  }
+
+  static validationError(errors: { error: string }[]): ApiResponse<any> {
     return new ApiResponse(HttpStatus.BAD_REQUEST, ResponseCode.VALIDATION_ERROR, errors);
   }
 }

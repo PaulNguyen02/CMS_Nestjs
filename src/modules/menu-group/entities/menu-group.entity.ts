@@ -16,8 +16,8 @@ export class menuGroup extends BaseEntity{
     @Column()
     slug: string;
 
-    @Column()
-    isfooter: boolean;
+    @Column({name: 'isfooter'})
+    isFooter: boolean;
 
     @OneToMany(() => menuItem, (MenuItem) => MenuItem.MenuGroup)
     MenuItem: menuItem[];

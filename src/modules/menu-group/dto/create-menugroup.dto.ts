@@ -1,11 +1,6 @@
 import { IsString, IsBoolean } from "@nestjs/class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { BaseDto } from "@/common/dto/base.dto";
-export class CreateMenuGroupDto extends BaseDto{
-
-    @ApiProperty()
-    @IsString()
-    slug: string;
+export class CreateMenuGroupDto{
     
     @ApiProperty()
     @IsString()
@@ -13,6 +8,6 @@ export class CreateMenuGroupDto extends BaseDto{
 
     @ApiProperty()
     @IsBoolean()
-    is_footer: boolean; 
+    isFooter: boolean; 
 
 }

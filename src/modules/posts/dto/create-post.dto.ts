@@ -1,13 +1,8 @@
 import { IsString, IsBoolean, IsArray, IsOptional, ValidateNested } from "@nestjs/class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { BaseDto } from "@/common/dto/base.dto";
 import { Type } from "class-transformer";
 import { CreateRelatedPostDto } from "./create-related-post.dto";
-export class CreatePostDto extends BaseDto{
-
-    @ApiProperty()
-    @IsString()
-    slug: string;
+export class CreatePostDto {
     
     @ApiProperty()
     @IsString()

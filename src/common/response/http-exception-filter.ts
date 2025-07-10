@@ -4,12 +4,14 @@ import {
   ArgumentsHost,
   BadRequestException,
   HttpException,
+  NotFoundException,
+  UnauthorizedException
 } from '@nestjs/common';
 import { Response } from 'express';
 import { QueryFailedError } from 'typeorm';
 import { ApiResponse } from './api-response';
 import { ERROR_MESSAGES_MAP } from '../const/validate-error-list.const';
-@Catch(HttpException)
+@Catch() //Nếu có tham số nó chỉ bắt 1 lỗi xác định
 export class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
@@ -50,41 +52,50 @@ export class HttpExceptionFilter implements ExceptionFilter {
       );
     }
 
-    // Lỗi query từ cơ sở dữ liệu (TypeORM)
     if (exception instanceof QueryFailedError) {
-      const err = exception as any;
-      const message = err.message as string;
+      const err: any = exception;
+      const num = err.driverError?.number as number;
 
-      // Lỗi trùng khóa (duplicate key)
-      if (
-        message.includes('duplicate key') ||
-        message.includes('UNIQUE constraint failed') ||
-        message.includes('violates unique constraint')
-      ) {
-        return res.status(400).json(
-          ApiResponse.error({
+      // Duplicate violations: PK (2627) hoặc UNIQUE INDEX (2601)
+      if (num === 2627 || num === 2601) {
+        return res
+          .status(400)
+          .json(ApiResponse.error({
             code: 400,
-            message:
-              'Dữ liệu bạn gửi đã tồn tại, vui lòng kiểm tra lại (bị trùng khóa).',
-          }),
-        );
+            message: 'Dữ liệu đã tồn tại (duplicate key violation).',
+          }));
       }
 
-      // Lỗi khác của SQL
-      return res.status(500).json(
-        ApiResponse.error({
+      // FK hoặc constraint violation (SQL Server mã 547)
+      if (num === 547) {
+        return res
+          .status(400)
+          .json(ApiResponse.error({
+            code: 400,
+            message: 'Vi phạm ràng buộc – khóa ngoại hoặc constraint không thỏa mãn.',
+          }));
+      }
+
+      // Các lỗi SQL khác
+      return res
+        .status(500)
+        .json(ApiResponse.error({
           code: 500,
-          message: 'Lỗi truy vấn cơ sở dữ liệu.'
-        }),
-      );
+          message: 'Lỗi cơ sở dữ liệu.',
+        }));
     }
 
-    // Trường hợp lỗi không xác định khác
-    return res.status(500).json(
-      ApiResponse.error({
-        code: 500,
-        message: 'Lỗi không xác định.'
-      }),
-    );
+    if (exception instanceof UnauthorizedException) {
+      return res.status(401).json(ApiResponse.unauthorized());
+    }
+
+    if (exception instanceof NotFoundException) {
+      return res.status(404).json(ApiResponse.notFound());
+    }
+
+    return res.status(500).json(ApiResponse.error({
+      code: 500,
+      message: 'Lỗi không xác định.',
+    }));
   }
 }

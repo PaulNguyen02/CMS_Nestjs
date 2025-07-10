@@ -10,9 +10,4 @@ export class CreateUserLoginDto {
     @IsString()
     password: string;
 
-    @IsString()
-    userAgent: string;
-    
-    @IsDate()
-    loginAt: Date;
 }

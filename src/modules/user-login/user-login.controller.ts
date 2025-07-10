@@ -17,22 +17,14 @@ export class LoginController {
     async createNewUser(
         @Body() dto: CreateUserLoginDto, 
         @Headers('user-agent') userAgent: string
-    ): Promise<ApiResponse<GetUserLoginDto>>{
-        try{
-            const result = await this.userLoginService.createNewProfile(dto, userAgent);
-            return ApiResponse.success<GetUserLoginDto>(result);
-        }catch{
-            return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
-        }
+    ): Promise<ApiResponse<string>>{
+        const result = await this.userLoginService.Login(dto, userAgent);
+        return ApiResponse.success<string>(result);
     }
 
     @Get()
-    async getUsers(): Promise<ApiResponse<GetUserLoginDto[]>> {
-        try{
-            const result = await this.userLoginService.getUsers();
-            return ApiResponse.success<GetUserLoginDto[]>(result);
-        }catch{
-            return ApiResponse.error();
-        }
+    async getLoginHistory(): Promise<ApiResponse<GetUserLoginDto[]>> {
+        const result = await this.userLoginService.getLoginHistory();
+        return ApiResponse.success<GetUserLoginDto[]>(result);
     }
 }

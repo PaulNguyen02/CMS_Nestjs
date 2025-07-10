@@ -5,6 +5,7 @@ import {
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import slugify from 'slugify';
 import { Categories } from './entities/categories.entity';
 import { GetCategoryDto } from './dto/get-category.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -17,12 +18,16 @@ export class CategoriesService{
         @InjectRepository(Categories)
         private readonly categoryRepository: Repository<Categories>,
     ) {}
-    async createCategory(dto: CreateCategoryDto): Promise<GetCategoryDto>{
+    async createCategory(dto: CreateCategoryDto, username: string): Promise<GetCategoryDto>{
+        const slug = slugify(dto.name, {
+            lower: true,       // chữ thường
+            strict: true       // loại bỏ ký tự đặc biệt
+        });
         const newCategory = await this.categoryRepository.create({
             name: dto.name,
-            slug: dto.slug,
+            slug: slug,
             createdAt: new Date(),
-            createdBy: dto.createdBy 
+            createdBy: username
         });
         const saved = await this.categoryRepository.save(newCategory);
         const res = plainToInstance(GetCategoryDto, saved, {
@@ -31,21 +36,25 @@ export class CategoriesService{
         return res;
     }
 
-    async updateCategory (categoryId: string, dto: UpdateCategoryDto): Promise<GetCategoryDto>{
-         
-        const existedCategory = await this.categoryRepository.findOne({
-            where: { id: categoryId }
-        });       
-        if (!existedCategory) {
-            throw new NotFoundException('Category not found');
+    async updateCategory (categoryId: string, dto: UpdateCategoryDto, username: string): Promise<GetCategoryDto>{
+        if(dto.name){
+            const slug = slugify(dto.name, {
+                lower: true,       // chữ thường
+                strict: true       // loại bỏ ký tự đặc biệt
+            });
+            await this.categoryRepository.update(categoryId, {
+                ...dto,
+                slug: slug,
+                createdAt: new Date(),
+                createdBy: username
+            });
         }
-        const newCategory = plainToInstance(Categories, dto);
-        const update = this.categoryRepository.merge(existedCategory,newCategory);
-        const savedCategory = await this.categoryRepository.save(update);
-        const res = plainToInstance(GetCategoryDto, savedCategory, {
+        const updatedCategory = await this.categoryRepository.findOne({
+            where: { id: categoryId }
+        });
+        const res = plainToInstance(GetCategoryDto, updatedCategory, {
             excludeExtraneousValues: true,
         });
-
         return res;
     }
 
@@ -61,15 +70,10 @@ export class CategoriesService{
                 { search: `%${search}%` },
             );
         }
+        qb.orderBy('category.created_at', 'DESC').skip((page - 1) * limit).take(limit);
+        const [items, total] = await qb.getManyAndCount();
 
-        qb.orderBy('category.created_at', 'DESC');
-
-        const allCategories = await qb.getMany(); 
-
-        const total = allCategories.length;
-        const start = (page - 1) * limit;
-        const paginatedCategories = allCategories.slice(start, start + limit);
-        const data = plainToInstance(GetCategoryDto, paginatedCategories, {
+        const data = plainToInstance(GetCategoryDto, items, {
             excludeExtraneousValues: true,
         });
         const res = new PaginationDto<GetCategoryDto>({
@@ -79,16 +83,6 @@ export class CategoriesService{
             lastPage: Math.ceil(total / limit),
         });
         return res;         
-    }
-
-    async findCategorybyId(categoryId: string): Promise<GetCategoryDto>{
-        const existedCategory = await this.categoryRepository.findOne({
-            where: { id: categoryId }
-        });  
-        const res = plainToInstance(GetCategoryDto, existedCategory, {
-            excludeExtraneousValues: true,
-        });
-        return res;
     }
 
     async deleteCategory(categoryId: string): Promise<GetCategoryDto>{

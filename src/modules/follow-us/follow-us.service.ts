@@ -11,6 +11,7 @@ import { plainToInstance } from 'class-transformer';
 import { followUs } from './entities/follow-us.entity';
 import { GetFollowusDto } from './dto/get-followus.dto';
 import { CreateFollowusDto } from './dto/create-followus.dto';
+import { FolowUsParam } from './dto/followus-param.dto';
 @Injectable()
 export class FollowUsService{
     constructor(
@@ -20,13 +21,13 @@ export class FollowUsService{
         private cacheManager: Cache
     ) {}
 
-    async createFollowUs(dto: CreateFollowusDto): Promise<GetFollowusDto>{
+    async createFollowUs(dto: CreateFollowusDto, username: string): Promise<GetFollowusDto>{
         const newFollow = await this.followRepository.create({
             name: dto.name,
             url: dto.url,
             fileId: dto.fileId,
             createdAt: new Date(),
-            createdBy: dto.createdBy 
+            createdBy: username 
         });
         const saved = await this.followRepository.save(newFollow);
         const res = plainToInstance(GetFollowusDto, saved, {
@@ -35,16 +36,27 @@ export class FollowUsService{
         return res;
     }
 
-    async getFollowUs(): Promise<GetFollowusDto[]>{
-        const cached = await this.cacheManager.get<GetFollowusDto[]>('follow');
-        if(cached){
+    async getFollowUs(query: FolowUsParam): Promise<GetFollowusDto[]>{
+        const {search} = query;
+        const cacheKey = `follow${search ? `:${search}` : ''}`;
+        const cached = await this.cacheManager.get<GetFollowusDto[]>(cacheKey);
+        if (cached) {
             return cached;
         }
-        const followUs = await this.followRepository.find({ relations: ['file'] });
+        const qb = this.followRepository
+            .createQueryBuilder('follow')
+            .leftJoinAndSelect('follow.file', 'file')
+        if (search) {
+            qb.andWhere(
+                'follow.name LIKE :search',
+                { search: `%${search}%` },
+            );
+        }
+        const followUs = await qb.getMany();
         const res = plainToInstance(GetFollowusDto, followUs, {
             excludeExtraneousValues: true,
         });
-        await this.cacheManager.set('follow', res, 60);
+        await this.cacheManager.set(cacheKey, res, 60);
         return res;
     }
 
