@@ -1,7 +1,6 @@
 import { IsString, IsEmail, IsPhoneNumber } from "@nestjs/class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { BaseDto } from "@/common/dto/base.dto";
-export class CreateMessageDto extends BaseDto{
+export class CreateMessageDto{
 
     @ApiProperty()   
     @IsString()

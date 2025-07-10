@@ -11,6 +11,7 @@ import { plainToInstance } from 'class-transformer';
 import { GetInformationDto } from './dto/get-information.dto';
 import { CreateInformationDto } from './dto/create-information.dto';
 import { UpdateInformationDto } from './dto/update-information.dto';
+import { ContactInformationParam } from './dto/contact-information-param.dto';
 import { contactInformation } from './entities/contact-information.entity';
 @Injectable()
 export class ContactInformationService {
@@ -22,12 +23,12 @@ export class ContactInformationService {
             private cacheManager: Cache
     ) {}
 
-    async createInformation(dto: CreateInformationDto): Promise<GetInformationDto>{
+    async createInformation(dto: CreateInformationDto, username: string): Promise<GetInformationDto>{
         const contactInfo = await this.contactRepository.create({
             key: dto.key,
             value: dto.value,
             createdAt: new Date(),
-            createdBy: dto.createdBy 
+            createdBy: username 
         });
         const saved = await this.contactRepository.save(contactInfo);
         const res = plainToInstance(GetInformationDto, saved, {
@@ -36,32 +37,42 @@ export class ContactInformationService {
         return res;
     };
 
-    async updateInformation (informationId: string, dto: UpdateInformationDto): Promise<GetInformationDto>{
-        const existedInformation = await this.contactRepository.findOne({
+    async updateInformation (informationId: string, dto: UpdateInformationDto, username: string): Promise<GetInformationDto>{
+        await this.contactRepository.update(informationId, {
+            ...dto,
+            createdAt: new Date(),
+            createdBy: username
+        });
+        const updatedContact = await this.contactRepository.findOne({
             where: { id: informationId }
-        });       
-        if (!existedInformation) {
-            throw new NotFoundException('existed information not found');
-        }
-        const newInfo = plainToInstance(contactInformation, dto);
-        const update = this.contactRepository.merge(existedInformation,newInfo);
-        const savedInfo = await this.contactRepository.save(update);
-        const res = plainToInstance(GetInformationDto, savedInfo, {
-            excludeExtraneousValues: true,
-        });        
+        });
+        const res = plainToInstance(GetInformationDto, updatedContact, {
+                excludeExtraneousValues: true,
+        });
         return res;
     }
 
-    async getInformation(): Promise<GetInformationDto[]>{
-        const cached = await this.cacheManager.get<GetInformationDto[]>('information');
-        if(cached){
+    async getInformation(query: ContactInformationParam): Promise<GetInformationDto[]>{
+        const {search} = query;
+        const cacheKey = `information${search ? `:${search}` : ''}`;
+        const cached = await this.cacheManager.get<GetInformationDto[]>(cacheKey);
+        if (cached) {
             return cached;
         }
-        const contactInformation = await this.contactRepository.find();
-        const res = plainToInstance(GetInformationDto, contactInformation, {
+        const qb = this.contactRepository
+            .createQueryBuilder('information');
+
+        if (search) {
+            qb.andWhere(
+                'information.key LIKE :search',
+                { search: `%${search}%` },
+            );
+        }
+        const data = await qb.getMany();
+        const res = plainToInstance(GetInformationDto, data, {
             excludeExtraneousValues: true,
         });
-        await this.cacheManager.set('information', res, 60);
+        await this.cacheManager.set(cacheKey, res, 60);
         return res;
     }
 

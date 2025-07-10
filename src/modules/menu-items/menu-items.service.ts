@@ -5,6 +5,7 @@ import {
 import { 
     Cache, 
     CACHE_MANAGER } from '@nestjs/cache-manager';
+import slugify from 'slugify';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
@@ -12,6 +13,7 @@ import { menuItem } from './entities/menu-item.entity';
 import { GetMenuItemDto } from './dto/get-menuitem.dto';
 import { CreateMenuItemDto } from './dto/create-menuitem.dto';
 import { UpdateMenuItemDto } from './dto/update-menuitem.dto';
+import { MenuItemParam } from './dto/menu-item-param.dto';
 @Injectable()
 export class MenuItemsService{
 
@@ -22,13 +24,17 @@ export class MenuItemsService{
         private cacheManager: Cache
     ) {}
 
-    async createMenuItem(dto: CreateMenuItemDto): Promise<GetMenuItemDto>{
+    async createMenuItem(dto: CreateMenuItemDto, username: string): Promise<GetMenuItemDto>{
+        const slug = slugify(dto.name, {
+            lower: true,       // chữ thường
+            strict: true       // loại bỏ ký tự đặc biệt
+        });
         const menuItem = await this.menuitemRepository.create({
             name: dto.name,
-            slug: dto.slug,
             groupId: dto.groupId,
+            slug: slug,
             createdAt: new Date(),
-            createdBy: dto.createdBy 
+            createdBy: username
         });
         const saved = await this.menuitemRepository.save(menuItem);
         const res = plainToInstance(GetMenuItemDto, saved, {
@@ -37,32 +43,50 @@ export class MenuItemsService{
         return res;
     }
         
-    async updateMenuItem(menuItemId: string, dto: UpdateMenuItemDto): Promise<GetMenuItemDto>{
-        const existedMenuItem = await this.menuitemRepository.findOne({
-            where: { id: menuItemId }
-        });       
-        if (!existedMenuItem) {
-            throw new NotFoundException('Menu Item not found');
+    async updateMenuItem(menuItemId: string, dto: UpdateMenuItemDto, username: string): Promise<GetMenuItemDto>{
+        if(dto.name){
+            const slug = slugify(dto.name, {
+                lower: true,       // chữ thường
+                strict: true       // loại bỏ ký tự đặc biệt
+            });
+            await this.menuitemRepository.update(menuItemId, {
+                ...dto,
+                slug: slug,
+                createdAt: new Date(),
+                createdBy: username
+            });
         }
-        const newMenuItem = plainToInstance(menuItem, dto);
-        const update = this.menuitemRepository.merge(existedMenuItem,newMenuItem);
-        const savedMenuItem = await this.menuitemRepository.save(update);
-        const res = plainToInstance(GetMenuItemDto, savedMenuItem, {
+        const updatedMenuItem = await this.menuitemRepository.findOne({
+            where: { id: menuItemId }
+        });
+        const res = plainToInstance(GetMenuItemDto, updatedMenuItem, {
             excludeExtraneousValues: true,
         });
         return res;
     }
         
-    async getMenuItem(): Promise<GetMenuItemDto[]>{
+    async getMenuItem(query: MenuItemParam): Promise<GetMenuItemDto[]>{
+        const {search} = query;
+        const cacheKey = `follow${search ? `:${search}` : ''}`;
         const cached = await this.cacheManager.get<GetMenuItemDto[]>('menuitem');
-        if(cached){
+        if (cached) {
             return cached;
         }
-        const menuItems = await this.menuitemRepository.find({ relations: ['menu_group'] });
+        const qb = this.menuitemRepository
+            .createQueryBuilder('menuitem')
+            .leftJoinAndSelect('menuitem.MenuGroup', 'MenuGroup')
+        if (search) {
+            qb.andWhere(
+                'menuitem.name LIKE :search OR menuitem.slug LIKE :search',
+                { search: `%${search}%` },
+            );
+        }
+        const menuItems = await qb.getMany();
+
         const res = plainToInstance(GetMenuItemDto, menuItems, {
             excludeExtraneousValues: true,
         });
-        await this.cacheManager.set('menuitem', res, 60);
+        await this.cacheManager.set(cacheKey, res, 60);
         return res;
     }
         

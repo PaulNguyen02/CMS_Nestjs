@@ -5,6 +5,7 @@ import {
 import { 
     Cache, 
     CACHE_MANAGER } from '@nestjs/cache-manager';
+import slugify from 'slugify';
 import { Repository} from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
@@ -23,31 +24,35 @@ export class PostsService{
         private cacheManager: Cache
     ) {}
 
-    async createPost(dto: CreatePostDto): Promise<GetPostDto>{
+    async createPost(dto: CreatePostDto, username: string): Promise<GetPostDto>{
         let saved;
+        const slug = slugify(dto.title, {
+            lower: true,       // chữ thường
+            strict: true       // loại bỏ ký tự đặc biệt
+        });
         if(dto.relatedPosts){
             const relatedEntities = dto.relatedPosts.map(r =>
                 this.postsRepository.create({
                 title: r.title,
-                slug: r.slug,
                 summary: r.summary,
                 content: r.content,
                 isActive: r.isActived,
                 banner: r.banner,
+                slug: slug,
                 categoryId: r.categoryId,
-                createdBy: r.createdBy,
+                createdBy: username,
                 createdAt: new Date(),
                 })
             ) || [];
             const newPost = this.postsRepository.create({
                 title: dto.title,
-                slug: dto.slug,
                 summary: dto.summary,
                 content: dto.content,
                 isActive: dto.isActived,
                 banner: dto.banner,
+                slug: slug,
                 categoryId: dto.categoryId,
-                createdBy: dto.createdBy,
+                createdBy: username,
                 createdAt: new Date(),
                 relatedPosts: relatedEntities,
             });
@@ -59,26 +64,30 @@ export class PostsService{
         return res;
     }
 
-    async updatePost (postId: string, dto: UpdatePostDto): Promise<GetPostDto>{             
-        const existedPost = await this.postsRepository.findOne({
-            where: { id: postId }
-        });       
-        if (!existedPost) {
-            throw new NotFoundException('Post not found');
+    async updatePost (postId: string, dto: UpdatePostDto, username: string): Promise<GetPostDto>{             
+        if(dto.title){
+            const slug = slugify(dto.title, {
+                lower: true,       // chữ thường
+                strict: true       // loại bỏ ký tự đặc biệt
+            });
+            await this.postsRepository.update(postId, {
+                ...dto,
+                slug: slug,
+                createdAt: new Date(),
+                createdBy: username
+            });
         }
-        const newPost = plainToInstance(Posts, dto);
-        const update = this.postsRepository.merge(existedPost,newPost);
-        const savedCategory = await this.postsRepository.save(update);
-        const res = plainToInstance(GetPostDto, savedCategory, {
+        const updatedPost = await this.postsRepository.findOne({
+            where: { id: postId }
+        });
+        const res = plainToInstance(GetPostDto, updatedPost, {
             excludeExtraneousValues: true,
-        });    
-        return res;
+        });
+        return res;    
     }
-
     
     async getPaginatePost(query: PostParam): Promise<PaginationDto<GetPostDto>>{
         const { page = 1, limit = 10, search, categoryName } = query;
-
         const qb = this.postsRepository
             .createQueryBuilder('post')
             .leftJoinAndSelect('post.categories', 'category')
@@ -90,21 +99,15 @@ export class PostsService{
                 { search: `%${search}%` },
             );
         }
-
         if (categoryName) {
                 qb.andWhere('category.name LIKE :categoryName', {
                 categoryName: `%${categoryName}%`,
             });
         }
-
-        qb.orderBy('post.created_at', 'DESC');
-
-        const allPosts = await qb.getMany(); 
-
-        const total = allPosts.length;
-        const start = (page - 1) * limit;
-        const paginatedPosts = allPosts.slice(start, start + limit);
-        const data = plainToInstance(GetPostDto, paginatedPosts, {
+        qb.orderBy('post.created_at', 'DESC').skip((page-1)*limit).take(limit);
+        const [items, total] = await qb.getManyAndCount();
+        
+        const data = plainToInstance(GetPostDto, items, {
             excludeExtraneousValues: true,
         });
         const res = new PaginationDto<GetPostDto>({
@@ -113,21 +116,6 @@ export class PostsService{
             page,
             lastPage: Math.ceil(total / limit),
         });
-        return res;
-    }
-        
-    async findPostbyId(postId: string): Promise<GetPostDto>{
-        const cached = await this.cacheManager.get<GetPostDto>('post');
-        if(cached){
-            return cached;
-        }
-        const existedPost = await this.postsRepository.findOne({
-            where: { id: postId }
-        });  
-        const res = plainToInstance(GetPostDto, existedPost, {
-            excludeExtraneousValues: true,
-        });
-        await this.cacheManager.set('post', res, 60);
         return res;
     }
 

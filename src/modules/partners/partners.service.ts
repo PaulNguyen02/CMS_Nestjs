@@ -26,13 +26,13 @@ export class PartnersService{
         private cacheManager: Cache
     ) {}
 
-    async createPartner(dto: CreatePartnerDto): Promise<GetPartnerDto>{
+    async createPartner(dto: CreatePartnerDto, username: string): Promise<GetPartnerDto>{
         const newPartner = await this.partnerRepository.create({
             name: dto.title,
             url: dto.url,
             fileId: dto.fileId,
             createdAt: new Date(),
-            createdBy: dto.createdBy 
+            createdBy: username 
         });
         const saved = await this.partnerRepository.save(newPartner);
         const res = plainToInstance(GetPartnerDto, saved, {
@@ -41,33 +41,18 @@ export class PartnersService{
         return res;
     }
 
-    async updatePartner(partnerId: string, dto: UpdatePartnerDto): Promise<GetPartnerDto>{
-        const existedPartner = await this.partnerRepository.findOne({
+    async updatePartner(partnerId: string, dto: UpdatePartnerDto, username: string): Promise<GetPartnerDto>{
+        await this.partnerRepository.update(partnerId, {
+            ...dto,
+            createdAt: new Date(),
+            createdBy: username
+        });
+        const updatedPartner = await this.partnerRepository.findOne({
             where: { id: partnerId }
-        });       
-        if (!existedPartner) {
-            throw new NotFoundException('Partner not found');
-        }
-        const newPartner = plainToInstance(Partners, dto);
-        const update = this.partnerRepository.merge(existedPartner,newPartner);
-        const savedPartner = await this.partnerRepository.save(update);
-        const res = plainToInstance(GetPartnerDto, savedPartner, {
+        });
+        const res = plainToInstance(GetPartnerDto, updatedPartner, {
             excludeExtraneousValues: true,
         });
-
-        return res;
-    }
-
-    async getPartner(): Promise<GetPartnerDto[]>{
-        const cached = await this.cacheManager.get<GetPartnerDto[]>('partners/all');
-        if(cached){
-            return cached;
-        }
-        const partners = await this.partnerRepository.find({relations: ['file']});
-        const res = plainToInstance(GetPartnerDto, partners, {
-            excludeExtraneousValues: true,
-        });
-        await this.cacheManager.set('partners/all', res, 60);
         return res;
     }
     
@@ -81,13 +66,10 @@ export class PartnersService{
                 { search: `%${search}%` },
             );
         }
-        qb.orderBy('partner.created_at', 'DESC');
-
-        const allPartners = await qb.getMany(); 
-        const total = allPartners.length;
-        const start = (page - 1) * limit;
-        const paginatedPartners = allPartners.slice(start, start + limit);
-        const data = plainToInstance(GetPartnerDto, paginatedPartners, {
+        qb.orderBy('partner.created_at', 'DESC').skip((page-1)* limit).take(limit);
+        const [items, total] = await qb.getManyAndCount();
+        
+        const data = plainToInstance(GetPartnerDto, items, {
             excludeExtraneousValues: true,
         });
         const res = new PaginationDto<GetPartnerDto>({

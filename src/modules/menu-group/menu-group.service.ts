@@ -1,3 +1,4 @@
+import slugify from 'slugify';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
@@ -6,6 +7,7 @@ import { menuGroup } from './entities/menu-group.entity';
 import { GetMenuGroupDto } from './dto/get-menugroup.dto';
 import { CreateMenuGroupDto } from './dto/create-menugroup.dto';
 import { UpdateMenuGroupDto } from './dto/update-menugroup.dto';
+import { MenuGroupParam } from './dto/menu-group-param.dto';
 @Injectable()
 export class MenuGroupsService{
 
@@ -14,13 +16,17 @@ export class MenuGroupsService{
         private readonly menugroupRepository: Repository<menuGroup>,
     ) {}
 
-    async createMenuGroup(dto: CreateMenuGroupDto): Promise<GetMenuGroupDto>{
+    async createMenuGroup(dto: CreateMenuGroupDto, username: string): Promise<GetMenuGroupDto>{
+        const slug = slugify(dto.name, {
+            lower: true,       // chữ thường
+            strict: true       // loại bỏ ký tự đặc biệt
+        });
         const menuGroup = await this.menugroupRepository.create({
             name: dto.name,
-            slug: dto.slug,
-            isfooter: dto.is_footer,
+            isFooter: dto.isFooter,
+            slug: slug,
             createdAt: new Date(),
-            createdBy: dto.createdBy 
+            createdBy: username
         });
         const saved = await this.menugroupRepository.save(menuGroup);
         const res = plainToInstance(GetMenuGroupDto, saved, {
@@ -29,24 +35,39 @@ export class MenuGroupsService{
         return res;
     }
 
-    async updateMenuGroup(menuGroupId: string, dto: UpdateMenuGroupDto): Promise<GetMenuGroupDto>{
-        const existedMenuGroup = await this.menugroupRepository.findOne({
-            where: { id: menuGroupId }
-        });       
-        if (!existedMenuGroup) {
-            throw new NotFoundException('Menu group not found');
+    async updateMenuGroup(menuGroupId: string, dto: UpdateMenuGroupDto, username: string): Promise<GetMenuGroupDto>{
+        if(dto.name){
+            const slug = slugify(dto.name, {
+                lower: true,       // chữ thường
+                strict: true       // loại bỏ ký tự đặc biệt
+            });
+            await this.menugroupRepository.update(menuGroupId, {
+                ...dto,
+                slug: slug,
+                createdAt: new Date(),
+                createdBy: username
+            });
         }
-        const newMenuGroup = plainToInstance(menuGroup, dto);
-        const update = this.menugroupRepository.merge(existedMenuGroup, newMenuGroup);
-        const savedMenuGroup = await this.menugroupRepository.save(update);
-        const res = plainToInstance(GetMenuGroupDto, savedMenuGroup, {
+        const updatedMenuGroup = await this.menugroupRepository.findOne({
+            where: { id: menuGroupId }
+        });
+        const res = plainToInstance(GetMenuGroupDto, updatedMenuGroup, {
             excludeExtraneousValues: true,
         });
         return res;
     }
 
-    async getMenuGroup(): Promise<GetMenuGroupDto[]>{
-        const menuGroups = await this.menugroupRepository.find();
+    async getMenuGroup(query: MenuGroupParam): Promise<GetMenuGroupDto[]>{
+        const {search} = query
+        const qb = this.menugroupRepository
+            .createQueryBuilder('menugroup')
+        if (search) {
+            qb.andWhere(
+                'menugroup.name LIKE :search OR menugroup.slug LIKE :search',
+                { search: `%${search}%` },
+            );
+        }
+        const menuGroups = await qb.getMany();
         const res = plainToInstance(GetMenuGroupDto, menuGroups, {
             excludeExtraneousValues: true,
         });

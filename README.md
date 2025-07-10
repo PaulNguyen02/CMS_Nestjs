@@ -6,6 +6,7 @@ jwt
 class validator
 type orm
 eslint
+slugify
 
 Dò code thừa 
 npx eslint .

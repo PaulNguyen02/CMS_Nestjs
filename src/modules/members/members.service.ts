@@ -6,6 +6,7 @@ import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import slugify from 'slugify';
 import { Member } from './entities/members.entity';
 import { GetMemberDto } from './dto/get-member.dto';
 import { CreateMemberDto } from './dto/create-member.dto';
@@ -20,18 +21,22 @@ export class MembersService{
         private readonly memberRepository: Repository<Member>
     ) {}
 
-    async createMember(dto: CreateMemberDto): Promise<GetMemberDto>{
+    async createMember(dto: CreateMemberDto, username: string): Promise<GetMemberDto>{
+        const slug = slugify(dto.fullName, {
+            lower: true,       // chữ thường
+            strict: true       // loại bỏ ký tự đặc biệt
+        });
         const member = await this.memberRepository.create({
             fullName: dto.fullName,
-            slug: dto.slug,
             position: dto.position,
+            slug: slug,
             createdAt: new Date(),
-            createdBy: dto.createdBy,
+            createdBy: username,
 
             workingHistory: dto.workingHistory.map(history => ({
                 ...history,
                 createdAt: new Date(),
-                createdBy: dto.createdBy,
+                createdBy: username,
             })),
         });
         const saved = await this.memberRepository.save(member);
@@ -41,19 +46,25 @@ export class MembersService{
         return res;
     }
 
-    async updateMember(memberId: string, dto: UpdateMemberDto): Promise<GetMemberDto>{
-        const existedMember = await this.memberRepository.findOne({
-            where: { id: memberId }
-        });       
-        if (!existedMember) {
-            throw new NotFoundException('Member not found');
+    async updateMember(memberId: string, dto: UpdateMemberDto, username: string): Promise<GetMemberDto>{
+        if(dto.fullName){
+            const slug = slugify(dto.fullName, {
+                lower: true,      
+                strict: true       
+            });
+            await this.memberRepository.update(memberId, {
+                ...dto,
+                slug: slug,
+                createdAt: new Date(),
+                createdBy: username
+            });
         }
-        const newMember = plainToInstance(Member, dto);
-        const update = this.memberRepository.merge(existedMember,newMember);
-        const savedMember = await this.memberRepository.save(update);
-        const res = plainToInstance(GetMemberDto, savedMember, {
+        const updatedMember = await this.memberRepository.findOne({
+            where: { id: memberId }
+        });
+        const res = plainToInstance(GetMemberDto, updatedMember, {
             excludeExtraneousValues: true,
-        });        
+        });
         return res;
     }
 
@@ -70,15 +81,9 @@ export class MembersService{
                 { search: `%${search}%` },
             );
         }
-
-        qb.orderBy('member.created_at', 'DESC');
-
-        const allMembers = await qb.getMany(); 
-
-        const total = allMembers.length;
-        const start = (page - 1) * limit;
-        const paginatedMembers = allMembers.slice(start, start + limit);
-        const data = plainToInstance(GetMemberDto, paginatedMembers, {
+        qb.orderBy('member.created_at', 'DESC').skip((page - 1) * limit).take(limit);
+        const [items, total] = await qb.getManyAndCount();
+        const data = plainToInstance(GetMemberDto, items, {
             excludeExtraneousValues: true,
         });
         const res = new PaginationDto<GetMemberDto>({
@@ -88,20 +93,6 @@ export class MembersService{
             lastPage: Math.ceil(total / limit),
         });
         return res;        
-    }
-
-    async findMemberbyId(memberId: string): Promise<GetMemberDto>{
-        const existedMember = await this.memberRepository.findOne({
-            where: { id: memberId },
-            relations:[
-                'files', 
-                'working_history'
-            ],
-        });  
-        const res = plainToInstance(GetMemberDto, existedMember, {
-            excludeExtraneousValues: true,
-        });
-        return res;
     }
 
     async deleteMember(memberId: string): Promise<GetMemberDto>{

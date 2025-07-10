@@ -4,53 +4,50 @@ import { Controller,
     Put,
     Delete,
     Param,
-    Body 
+    Body,
+    Query,
+    UseGuards 
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { ApiResponse } from '@/common/response/api-response';
+import { GetUser } from '@/common/decorators/get-user.decorator';
 import { GetInformationDto } from './dto/get-information.dto';
 import { CreateInformationDto } from './dto/create-information.dto';
 import { UpdateInformationDto } from './dto/update-information.dto';
 import { ContactInformationService } from './contact-information.service';
+import { ContactInformationParam } from './dto/contact-information-param.dto';
+@UseGuards(AuthGuard('jwt'))
 @Controller('contact-information')
 export class ContactInformationController {
     constructor(private readonly contactInformationService: ContactInformationService) {}
     @Post()
-    async createInformation(@Body() dto: CreateInformationDto): Promise<ApiResponse<GetInformationDto>>{
-        try{
-            const result = await this.contactInformationService.createInformation(dto);
-            return ApiResponse.success<GetInformationDto>(result);
-        }catch{
-            return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
-        }
+    async createInformation(
+        @Body() dto: CreateInformationDto,
+        @GetUser('username') username: string
+    ): Promise<ApiResponse<GetInformationDto>>{
+        const result = await this.contactInformationService.createInformation(dto, username);
+        return ApiResponse.success<GetInformationDto>(result);
     }
 
     @Get()
-    async getInformation(): Promise<ApiResponse<GetInformationDto[]>>{
-        try{
-            const res = await this.contactInformationService.getInformation();
-            return ApiResponse.success<GetInformationDto[]>(res)
-        }catch{
-            return ApiResponse.error()
-        }
+    async getInformation(@Query() query: ContactInformationParam): Promise<ApiResponse<GetInformationDto[]>>{
+        const res = await this.contactInformationService.getInformation(query);
+        return ApiResponse.success<GetInformationDto[]>(res)
     }
     
     @Put(':id')
-    async updateInformation(@Param('id') id: string, @Body() update: UpdateInformationDto): Promise<ApiResponse<GetInformationDto>>{
-        try{
-            const res = await this.contactInformationService.updateInformation(id, update);
-            return ApiResponse.success<GetInformationDto>(res)
-        }catch{
-            return ApiResponse.validationError([{ "field": "title", "error": "lỗi dữ liệu đầu vào" } ]);
-        }
+    async updateInformation(
+        @Param('id') id: string, 
+        @Body() update: UpdateInformationDto,
+        @GetUser('username') username: string,
+    ): Promise<ApiResponse<GetInformationDto>>{
+        const res = await this.contactInformationService.updateInformation(id, update, username);
+        return ApiResponse.success<GetInformationDto>(res)
     }
 
     @Delete()
     async deleteInformation(@Param('id') id: string){
-        try{
-            const res = await this.contactInformationService.deleteInformation(id)
-            return ApiResponse.success<GetInformationDto>(res)
-        }catch{
-            return ApiResponse.error()
-        }
+        const res = await this.contactInformationService.deleteInformation(id)
+        return ApiResponse.success<GetInformationDto>(res)
     }
 }
