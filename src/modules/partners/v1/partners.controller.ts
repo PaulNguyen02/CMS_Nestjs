@@ -6,20 +6,22 @@ import { Controller,
     Query,
     Param,
     Body,
+    Version,
     UseGuards 
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { PartnersService } from './partners.service';
-import { GetPartnerDto } from './dto/get-partner.dto';
-import { CreatePartnerDto } from './dto/create-partner.dto';
-import { UpdatePartnerDto } from './dto/update-partner.dto';
+import { PartnersService } from '../partners.service';
+import { GetPartnerDto } from '../dto/get-partner.dto';
+import { CreatePartnerDto } from '../dto/create-partner.dto';
+import { UpdatePartnerDto } from '../dto/update-partner.dto';
 import { PaginationDto } from '@/common/dto/pagination.dto';
 import { ApiResponse } from '@/common/response/api-response';
-import { PartnerParam } from './dto/partner-param.dto';
+import { PartnerParam } from '../dto/partner-param.dto';
+import { JwtAuthGuard } from '@/common/guard/jwt-auth.guard';
+import { Public } from '@/common/decorators/public.decorator';
 import { GetUser } from '@/common/decorators/get-user.decorator';
-@UseGuards(AuthGuard('jwt'))
-@Controller('partners')
-export class PartnersController {
+@UseGuards(JwtAuthGuard)
+@Controller({path: 'partners', version:'1'})
+export class PartnersV1Controller {
     constructor(private readonly partnerService: PartnersService) {}
     @Post()
     async createPartner(
@@ -30,6 +32,7 @@ export class PartnersController {
         return ApiResponse.success<GetPartnerDto>(result);
     }
 
+    @Public()
     @Get()
     async getPaginatePartner(@Query() query: PartnerParam) : Promise<ApiResponse<PaginationDto<GetPartnerDto>>>{
         const res = await this.partnerService.getPaginatePartner(query);
@@ -45,7 +48,6 @@ export class PartnersController {
         const res = await this.partnerService.updatePartner(id, update, username);
         return ApiResponse.success<GetPartnerDto>(res)
     }
-
 
     @Delete(':id')
     async deletePartner(@Param('id') id: string): Promise<ApiResponse<GetPartnerDto>>{

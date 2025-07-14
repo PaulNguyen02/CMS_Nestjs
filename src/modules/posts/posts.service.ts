@@ -5,7 +5,7 @@ import {
 import { 
     Cache, 
     CACHE_MANAGER } from '@nestjs/cache-manager';
-import slugify from 'slugify';
+import { slugString } from '@/common/utils/string.util';
 import { Repository} from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
@@ -26,10 +26,7 @@ export class PostsService{
 
     async createPost(dto: CreatePostDto, username: string): Promise<GetPostDto>{
         let saved;
-        const slug = slugify(dto.title, {
-            lower: true,       // chữ thường
-            strict: true       // loại bỏ ký tự đặc biệt
-        });
+        const slug = slugString(dto.title)
         if(dto.relatedPosts){
             const relatedEntities = dto.relatedPosts.map(r =>
                 this.postsRepository.create({
@@ -66,10 +63,7 @@ export class PostsService{
 
     async updatePost (postId: string, dto: UpdatePostDto, username: string): Promise<GetPostDto>{             
         if(dto.title){
-            const slug = slugify(dto.title, {
-                lower: true,       // chữ thường
-                strict: true       // loại bỏ ký tự đặc biệt
-            });
+            const slug = slugString(dto.title)
             await this.postsRepository.update(postId, {
                 ...dto,
                 slug: slug,
@@ -86,6 +80,20 @@ export class PostsService{
         return res;    
     }
     
+
+    async getSomePosts():Promise<GetPostDto[]>{
+        const qb = this.postsRepository
+        .createQueryBuilder('post')
+        .leftJoinAndSelect('post.categories', 'category')
+        .leftJoinAndSelect('post.relatedPosts', 'relatedPosts')
+        qb.take(5);
+        const items = await qb.getMany();
+        const data = plainToInstance(GetPostDto, items, {
+            excludeExtraneousValues: true,
+        });
+        return data;
+    }
+
     async getPaginatePost(query: PostParam): Promise<PaginationDto<GetPostDto>>{
         const { page = 1, limit = 10, search, categoryName } = query;
         const qb = this.postsRepository
@@ -104,7 +112,7 @@ export class PostsService{
                 categoryName: `%${categoryName}%`,
             });
         }
-        qb.orderBy('post.created_at', 'DESC').skip((page-1)*limit).take(limit);
+        qb.orderBy('post.createdAt', 'DESC').skip((page-1)*limit).take(limit);
         const [items, total] = await qb.getManyAndCount();
         
         const data = plainToInstance(GetPostDto, items, {

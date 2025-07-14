@@ -2,7 +2,7 @@ import {
     Inject, 
     Injectable, 
     NotFoundException } from '@nestjs/common';
-import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { slugString } from '@/common/utils/string.util';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
@@ -22,10 +22,7 @@ export class MembersService{
     ) {}
 
     async createMember(dto: CreateMemberDto, username: string): Promise<GetMemberDto>{
-        const slug = slugify(dto.fullName, {
-            lower: true,       // chữ thường
-            strict: true       // loại bỏ ký tự đặc biệt
-        });
+        const slug = slugString(dto.fullName)
         const member = await this.memberRepository.create({
             fullName: dto.fullName,
             position: dto.position,
@@ -48,10 +45,7 @@ export class MembersService{
 
     async updateMember(memberId: string, dto: UpdateMemberDto, username: string): Promise<GetMemberDto>{
         if(dto.fullName){
-            const slug = slugify(dto.fullName, {
-                lower: true,      
-                strict: true       
-            });
+            const slug = slugString(dto.fullName)
             await this.memberRepository.update(memberId, {
                 ...dto,
                 slug: slug,
@@ -68,6 +62,17 @@ export class MembersService{
         return res;
     }
 
+    async getSomeMembers(): Promise<GetMemberDto[]>{
+        const qb = await this.memberRepository
+            .createQueryBuilder('member')
+            .leftJoinAndSelect('member.files','files')
+            .leftJoinAndSelect('member.workingHistory', 'workingHistory')
+        qb.take(5)
+        const items = await qb.getMany()
+        const data = plainToInstance(GetMemberDto, items,{excludeExtraneousValues: true})
+        return data;
+    }
+
     async getPaginateMember(query: MemberParam): Promise<PaginationDto<GetMemberDto>>{
         const { page = 1, limit = 10, search } = query;
 
@@ -77,11 +82,11 @@ export class MembersService{
             .leftJoinAndSelect('member.workingHistory', 'workingHistory')
         if (search) {
             qb.andWhere(
-                'member.fullname LIKE :search OR member.position LIKE :search',
+                'member.fullName LIKE :search OR member.position LIKE :search',
                 { search: `%${search}%` },
             );
         }
-        qb.orderBy('member.created_at', 'DESC').skip((page - 1) * limit).take(limit);
+        qb.orderBy('member.createdAt', 'DESC').skip((page - 1) * limit).take(limit);
         const [items, total] = await qb.getManyAndCount();
         const data = plainToInstance(GetMemberDto, items, {
             excludeExtraneousValues: true,

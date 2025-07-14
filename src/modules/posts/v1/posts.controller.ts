@@ -7,20 +7,22 @@ import {
     Query,
     Param,
     Body,
+    Version,
     UseGuards
  } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { PostsService } from './posts.service';
-import { GetPostDto } from './dto/get-post.dto';
-import { CreatePostDto } from './dto/create-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
+import { PostsService } from '../posts.service';
+import { GetPostDto } from '../dto/get-post.dto';
+import { CreatePostDto } from '../dto/create-post.dto';
+import { UpdatePostDto } from '../dto/update-post.dto';
 import { ApiResponse } from '@/common/response/api-response';
 import { PaginationDto } from '@/common/dto/pagination.dto';
-import { PostParam } from './dto/post-param.dto';
+import { PostParam } from '../dto/post-param.dto';
+import { JwtAuthGuard } from '@/common/guard/jwt-auth.guard';
 import { GetUser } from '@/common/decorators/get-user.decorator';
-@UseGuards(AuthGuard('jwt'))
-@Controller('posts')
-export class PostsController {
+import { Public } from '@/common/decorators/public.decorator';
+@UseGuards(JwtAuthGuard)
+@Controller({path: 'posts', version: '1'})
+export class PostsV1Controller {
     constructor (private readonly postService: PostsService){}
     @Post()
     async createPost(
@@ -31,6 +33,7 @@ export class PostsController {
         return ApiResponse.success<GetPostDto>(result);
     }
 
+    @Public()
     @Get()
     async getPaginatePost(@Query() query: PostParam): Promise<ApiResponse<PaginationDto<GetPostDto>>>{
         const res = await this.postService.getPaginatePost(query);

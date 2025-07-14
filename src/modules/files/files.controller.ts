@@ -18,7 +18,7 @@ import { ApiResponse } from '@/common/response/api-response';
 import { uploadBody } from '@/common/const/upload-body.const';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 @UseGuards(AuthGuard('jwt'))
-@Controller('files')
+@Controller({path:'files', version:'1'})
 export class FilesController {
     constructor(private readonly fileService: FilesService) {}
 

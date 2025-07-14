@@ -3,6 +3,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { slugString } from '@/common/utils/string.util';
 import { menuGroup } from './entities/menu-group.entity';
 import { GetMenuGroupDto } from './dto/get-menugroup.dto';
 import { CreateMenuGroupDto } from './dto/create-menugroup.dto';
@@ -17,10 +18,7 @@ export class MenuGroupsService{
     ) {}
 
     async createMenuGroup(dto: CreateMenuGroupDto, username: string): Promise<GetMenuGroupDto>{
-        const slug = slugify(dto.name, {
-            lower: true,       // chữ thường
-            strict: true       // loại bỏ ký tự đặc biệt
-        });
+        const slug = slugString(dto.name)
         const menuGroup = await this.menugroupRepository.create({
             name: dto.name,
             isFooter: dto.isFooter,
@@ -37,10 +35,7 @@ export class MenuGroupsService{
 
     async updateMenuGroup(menuGroupId: string, dto: UpdateMenuGroupDto, username: string): Promise<GetMenuGroupDto>{
         if(dto.name){
-            const slug = slugify(dto.name, {
-                lower: true,       // chữ thường
-                strict: true       // loại bỏ ký tự đặc biệt
-            });
+            const slug = slugString(dto.name)
             await this.menugroupRepository.update(menuGroupId, {
                 ...dto,
                 slug: slug,

@@ -75,6 +75,7 @@ export class ContactInformationService {
         await this.cacheManager.set(cacheKey, res, 60);
         return res;
     }
+    
 
     async deleteInformation(informationId: string): Promise<GetInformationDto>{
         const contactInformation = await this.contactRepository.findOne({ where: { id: informationId } });
