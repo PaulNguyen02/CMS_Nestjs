@@ -9,6 +9,7 @@ import slugify from 'slugify';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import { slugString } from '@/common/utils/string.util';
 import { menuItem } from './entities/menu-item.entity';
 import { GetMenuItemDto } from './dto/get-menuitem.dto';
 import { CreateMenuItemDto } from './dto/create-menuitem.dto';
@@ -25,10 +26,7 @@ export class MenuItemsService{
     ) {}
 
     async createMenuItem(dto: CreateMenuItemDto, username: string): Promise<GetMenuItemDto>{
-        const slug = slugify(dto.name, {
-            lower: true,       // chữ thường
-            strict: true       // loại bỏ ký tự đặc biệt
-        });
+        const slug = slugString(dto.name)
         const menuItem = await this.menuitemRepository.create({
             name: dto.name,
             groupId: dto.groupId,
@@ -45,10 +43,7 @@ export class MenuItemsService{
         
     async updateMenuItem(menuItemId: string, dto: UpdateMenuItemDto, username: string): Promise<GetMenuItemDto>{
         if(dto.name){
-            const slug = slugify(dto.name, {
-                lower: true,       // chữ thường
-                strict: true       // loại bỏ ký tự đặc biệt
-            });
+            const slug = slugString(dto.name)
             await this.menuitemRepository.update(menuItemId, {
                 ...dto,
                 slug: slug,

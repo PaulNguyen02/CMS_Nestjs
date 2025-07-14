@@ -5,7 +5,7 @@ import {
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import slugify from 'slugify';
+import {slugString} from 'src/common/utils/string.util'
 import { Categories } from './entities/categories.entity';
 import { GetCategoryDto } from './dto/get-category.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -19,10 +19,7 @@ export class CategoriesService{
         private readonly categoryRepository: Repository<Categories>,
     ) {}
     async createCategory(dto: CreateCategoryDto, username: string): Promise<GetCategoryDto>{
-        const slug = slugify(dto.name, {
-            lower: true,       // chữ thường
-            strict: true       // loại bỏ ký tự đặc biệt
-        });
+        const slug = slugString(dto.name)
         const newCategory = await this.categoryRepository.create({
             name: dto.name,
             slug: slug,
@@ -38,10 +35,7 @@ export class CategoriesService{
 
     async updateCategory (categoryId: string, dto: UpdateCategoryDto, username: string): Promise<GetCategoryDto>{
         if(dto.name){
-            const slug = slugify(dto.name, {
-                lower: true,       // chữ thường
-                strict: true       // loại bỏ ký tự đặc biệt
-            });
+            const slug = slugString(dto.name)
             await this.categoryRepository.update(categoryId, {
                 ...dto,
                 slug: slug,

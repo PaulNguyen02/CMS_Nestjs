@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { join } from 'path';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -16,7 +16,10 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
       httpsOptions,
   });
-  app.setGlobalPrefix('api/v1/');
+  app.setGlobalPrefix('api');
+    app.enableVersioning({
+    type: VersioningType.URI,
+  });
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
     prefix: '/uploads/',
   });

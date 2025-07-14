@@ -6,9 +6,9 @@ import { Controller,
     Param,
     Body,
     Query,
+    Version,
     UseGuards 
  } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { MenuGroupsService } from './menu-group.service';
 import { GetMenuGroupDto } from './dto/get-menugroup.dto';
 import { CreateMenuGroupDto } from './dto/create-menugroup.dto';
@@ -16,10 +16,13 @@ import { UpdateMenuGroupDto } from './dto/update-menugroup.dto';
 import { ApiResponse } from '@/common/response/api-response';
 import { MenuGroupParam } from './dto/menu-group-param.dto';
 import { GetUser } from '@/common/decorators/get-user.decorator';
-@UseGuards(AuthGuard('jwt'))
+import { JwtAuthGuard } from '@/common/guard/jwt-auth.guard';
+import { Public } from '@/common/decorators/public.decorator';
+@UseGuards(JwtAuthGuard)
 @Controller('menu-groups')
 export class MenuGroupsController {
     constructor(private readonly menugroupService: MenuGroupsService) {}
+    @Version('1')
     @Post()
     async createMenuGroup(
         @Body() dto: CreateMenuGroupDto,
@@ -29,12 +32,15 @@ export class MenuGroupsController {
         return ApiResponse.success<GetMenuGroupDto>(result);
     }
 
+    @Version('1')
+    @Public()
     @Get()
     async getMenuGroup(@Query() query: MenuGroupParam): Promise<ApiResponse<GetMenuGroupDto[]>>{
         const res = await this.menugroupService.getMenuGroup(query);
         return ApiResponse.success<GetMenuGroupDto[]>(res)
     }
     
+    @Version('1')
     @Put(':id')
     async updateMenuGroup(
         @Param('id') id: string, 
@@ -45,6 +51,7 @@ export class MenuGroupsController {
         return ApiResponse.success<GetMenuGroupDto>(res)
     }
     
+    @Version('1')
     @Delete(':id')
     async deleteMenuGroup(@Param('id') id: string): Promise<ApiResponse<GetMenuGroupDto>>{
         const res = await this.menugroupService.deleteMenuGroup(id);

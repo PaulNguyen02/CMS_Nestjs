@@ -8,17 +8,21 @@ import { Controller,
     Query,
     UseGuards 
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { ApiResponse } from '@/common/response/api-response';
 import { GetUser } from '@/common/decorators/get-user.decorator';
-import { GetInformationDto } from './dto/get-information.dto';
-import { CreateInformationDto } from './dto/create-information.dto';
-import { UpdateInformationDto } from './dto/update-information.dto';
-import { ContactInformationService } from './contact-information.service';
-import { ContactInformationParam } from './dto/contact-information-param.dto';
-@UseGuards(AuthGuard('jwt'))
-@Controller('contact-information')
-export class ContactInformationController {
+import { GetInformationDto } from '../dto/get-information.dto';
+import { CreateInformationDto } from '../dto/create-information.dto';
+import { UpdateInformationDto } from '../dto/update-information.dto';
+import { ContactInformationService } from '../contact-information.service';
+import { ContactInformationParam } from '../dto/contact-information-param.dto';
+import { JwtAuthGuard } from '@/common/guard/jwt-auth.guard';
+import { Public } from '@/common/decorators/public.decorator';
+@UseGuards(JwtAuthGuard)
+@Controller({
+    path: 'contact-information',
+    version: '1'
+})
+export class ContactInformationV1Controller {
     constructor(private readonly contactInformationService: ContactInformationService) {}
     @Post()
     async createInformation(
@@ -30,11 +34,19 @@ export class ContactInformationController {
     }
 
     @Get()
+    @Public()
     async getInformation(@Query() query: ContactInformationParam): Promise<ApiResponse<GetInformationDto[]>>{
         const res = await this.contactInformationService.getInformation(query);
         return ApiResponse.success<GetInformationDto[]>(res)
     }
-    
+
+    @Get()
+    @Public()
+    async showToClient(@Query() query: ContactInformationParam): Promise<ApiResponse<GetInformationDto[]>>{
+        const res = await this.contactInformationService.getInformation(query);
+        return ApiResponse.success<GetInformationDto[]>(res)
+    }
+
     @Put(':id')
     async updateInformation(
         @Param('id') id: string, 

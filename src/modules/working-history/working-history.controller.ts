@@ -4,16 +4,17 @@ import {
     Delete,
     Param,
     Body,
+    Version,
     UseGuards
  } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { ApiResponse } from '@/common/response/api-response';
 import { WorkingHistoryService } from './working-history.service';
 import { GetWorkingHistoryDto } from './dto/get-workinghistory.dto';
 import { UpdateWorkingHistoryDto } from './dto/update-workinghistory.dto';
 import { GetUser } from '@/common/decorators/get-user.decorator';
-@UseGuards(AuthGuard('jwt'))
-@Controller('working-history')
+import { JwtAuthGuard } from '@/common/guard/jwt-auth.guard';
+@UseGuards(JwtAuthGuard)
+@Controller({path: 'working-history', version: '1'})
 export class WorkingHistoryController {
     constructor(private readonly workinghistoryService: WorkingHistoryService) {}
 
@@ -26,7 +27,6 @@ export class WorkingHistoryController {
         const res = await this.workinghistoryService.updateWorkingHistory(id, update, username);
         return ApiResponse.success<GetWorkingHistoryDto>(res)
     }
-
 
     @Delete(':id')
     async deleteWorkingHistory(@Param('id') id: string): Promise<ApiResponse<GetWorkingHistoryDto>>{

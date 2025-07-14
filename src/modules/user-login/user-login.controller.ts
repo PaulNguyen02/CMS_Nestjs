@@ -3,13 +3,14 @@ import {
     Post, 
     Get,
     Body, 
+    Version,
     Headers 
 } from '@nestjs/common';
 import { UserLoginService } from './user-login.service';
 import { GetUserLoginDto } from './dto/get-userlogin.dto';
 import { ApiResponse } from '@/common/response/api-response';
 import { CreateUserLoginDto } from './dto/create-userlogin.dto';
-@Controller('user-login')
+@Controller({path:'user-login', version:'1'})
 export class LoginController {
     constructor(private readonly userLoginService: UserLoginService) {}
 

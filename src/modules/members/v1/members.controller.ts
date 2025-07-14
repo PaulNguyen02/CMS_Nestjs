@@ -8,19 +8,21 @@ import { Controller,
     Body,
     UseGuards
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { MembersService } from './members.service';
-import { GetMemberDto } from './dto/get-member.dto';
-import { CreateMemberDto } from './dto/create-member.dto';
-import { UpdateMemberDto } from './dto/update-member.dto';
+import { MembersService } from '../members.service';
+import { GetMemberDto } from '../dto/get-member.dto';
+import { CreateMemberDto } from '../dto/create-member.dto';
+import { UpdateMemberDto } from '../dto/update-member.dto';
 import { PaginationDto } from '@/common/dto/pagination.dto';
 import { ApiResponse } from '@/common/response/api-response';
-import { MemberParam } from './dto/member-param.dto';
+import { JwtAuthGuard } from '@/common/guard/jwt-auth.guard';
+import { MemberParam } from '../dto/member-param.dto';
 import { GetUser } from '@/common/decorators/get-user.decorator';
-@UseGuards(AuthGuard('jwt'))
-@Controller('members')
-export class MembersController {
+import { Public } from '@/common/decorators/public.decorator';
+@UseGuards(JwtAuthGuard)
+@Controller({path: 'members', version: '1'})
+export class MembersV1Controller {
     constructor(private readonly memberService: MembersService) {}
+
     @Post()
     async createMember(
         @Body() dto: CreateMemberDto,
@@ -30,6 +32,7 @@ export class MembersController {
         return ApiResponse.success<GetMemberDto>(result);
     }
 
+    @Public()
     @Get()
     async getPaginateMember(@Query() query: MemberParam) : Promise<ApiResponse<PaginationDto<GetMemberDto>>>{
         const res = await this.memberService.getPaginateMember(query);
@@ -45,8 +48,7 @@ export class MembersController {
         const res = await this.memberService.updateMember(id, update, username);
         return ApiResponse.success<GetMemberDto>(res)
     }
-
-    
+   
     @Delete(':id')
     async deleteMember(@Param('id') id: string): Promise<ApiResponse<GetMemberDto>>{
         const res = await this.memberService.deleteMember(id);
