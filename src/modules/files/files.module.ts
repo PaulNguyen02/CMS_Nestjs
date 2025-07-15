@@ -1,12 +1,15 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Files } from './entities/files.entity';
-import { FilesController } from './files.controller';
-import { FilesService } from './files.service';
-
+import { RouterModule } from '@nestjs/core';
+import { FilesCMSModule } from './modules/files-cms.module';
 @Module({
-  imports:[TypeOrmModule.forFeature([Files])],
-  controllers: [FilesController],
-  providers: [FilesService]
+  imports: [
+    FilesCMSModule,
+    RouterModule.register([
+      {
+        path: 'v1/admin',
+        module: FilesCMSModule,
+      },
+    ])
+  ],
 })
 export class FilesModule {}

@@ -1,13 +1,22 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Posts } from './entities/posts.entity';
-import { PostsV1Controller } from './v1/posts.controller';
-import { PostsV2Controller } from './v2/posts.controller';
-import { PostsService } from './posts.service';
+import { RouterModule } from '@nestjs/core';
+import { PostsCMSModule } from './modules/posts-cms.module';
+import { PostsClientModule } from './modules/posts-client.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Posts])],
-  controllers: [PostsV1Controller, PostsV2Controller],
-  providers: [PostsService]
+  imports: [
+    PostsCMSModule,
+    PostsClientModule,
+    RouterModule.register([
+      {
+        path: 'v1/admin',
+        module: PostsCMSModule,
+      },
+      {
+        path: 'v1/user',
+        module: PostsClientModule,
+      },
+    ])
+  ],
 })
 export class PostsModule {}

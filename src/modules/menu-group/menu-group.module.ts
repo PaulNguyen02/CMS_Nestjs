@@ -1,12 +1,16 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { menuGroup } from './entities/menu-group.entity';
-import { MenuGroupsController } from './menu-group.controller';
-import { MenuGroupsService } from './menu-group.service';
+import { RouterModule } from '@nestjs/core';
+import { MenuGroupCMSModule } from './modules/menu-group-cms.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([menuGroup])],
-  controllers: [MenuGroupsController],
-  providers: [MenuGroupsService]
+  imports: [
+    MenuGroupCMSModule,
+    RouterModule.register([
+      {
+        path: 'v1/admin',
+        module: MenuGroupCMSModule,
+      },
+    ])
+  ],
 })
 export class MenuGroupModule {}

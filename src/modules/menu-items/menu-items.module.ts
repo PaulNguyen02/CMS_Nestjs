@@ -1,13 +1,22 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { menuItem } from './entities/menu-item.entity';
-import { MenuItemsV1Controller } from './v1/menu-items.controller';
-import { MenuItemsV2Controller } from './v2/menu-items.controller';
-import { MenuItemsService } from './menu-items.service';
+import { RouterModule } from '@nestjs/core';
+import { MenuItemCMSModule } from './modules/menu-items-cms.module';
+import { MenuItemClientModule } from './modules/menu-items-client.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([menuItem])],
-  controllers: [MenuItemsV1Controller, MenuItemsV2Controller],
-  providers: [MenuItemsService]
+  imports: [
+    MenuItemCMSModule,
+    MenuItemClientModule,
+    RouterModule.register([
+      {
+        path: 'v1/admin',
+        module: MenuItemCMSModule,
+      },
+      {
+        path: 'v1/user',
+        module: MenuItemClientModule,
+      },
+    ])
+  ],
 })
 export class MenuItemModule {}

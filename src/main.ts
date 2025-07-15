@@ -4,8 +4,10 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './common/response/http-exception-filter';
+import { JwtAuthGuard } from './common/guard/jwt-auth.guard'; 
 async function bootstrap() {
 
   const httpsOptions = {
@@ -16,10 +18,11 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
       httpsOptions,
   });
+
+  const reflector = app.get(Reflector);
+  app.useGlobalGuards(new JwtAuthGuard(reflector)); // Set global guard
+
   app.setGlobalPrefix('api');
-    app.enableVersioning({
-    type: VersioningType.URI,
-  });
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
     prefix: '/uploads/',
   });
