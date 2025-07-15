@@ -1,13 +1,22 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { followUs } from './entities/follow-us.entity';
-import { FollowUsV1Controller } from './v1/follow-us.controller';
-import { FollowUsV2Controller } from './v2/follow-us.controller';
-import { FollowUsService } from './follow-us.service';
+import { RouterModule } from '@nestjs/core';
+import { FollowUsCMSModule } from './modules/follow-us-cms.module';
+import { FollowUsClientModule } from './modules/follow-us-client.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([followUs])],
-  controllers: [FollowUsV1Controller, FollowUsV2Controller],
-  providers: [FollowUsService]
+  imports: [
+    FollowUsCMSModule,
+    FollowUsClientModule,
+    RouterModule.register([
+      {
+        path: 'v1/admin',
+        module: FollowUsCMSModule,
+      },
+      {
+        path: 'v1/user',
+        module: FollowUsClientModule,
+      }
+    ])
+  ],
 })
 export class FollowUsModule {}

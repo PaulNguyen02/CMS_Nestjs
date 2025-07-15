@@ -1,13 +1,21 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Partners } from './entities/partners.entity';
-import { PartnersService } from './partners.service';
-import { PartnersV1Controller } from './v1/partners.controller';
-import { PartnersV2Controller } from './v2/partners.controller';
-
+import { RouterModule } from '@nestjs/core';
+import { PartnersCMSModule } from './modules/partners-cms.module';
+import { PartnersClientModule } from './modules/partners-client.module';
 @Module({
-  imports:[TypeOrmModule.forFeature([Partners])],
-  controllers: [PartnersV1Controller, PartnersV2Controller],
-  providers: [PartnersService]
+  imports: [
+    PartnersCMSModule,
+    PartnersClientModule,
+    RouterModule.register([
+      {
+        path: 'v1/admin',
+        module: PartnersCMSModule,
+      },
+      {
+        path: 'v1/user',
+        module: PartnersClientModule,
+      }
+    ])
+  ],
 })
 export class PartnersModule {}

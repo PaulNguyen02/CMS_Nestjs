@@ -1,11 +1,15 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { WorkingHistoryService } from './working-history.service';
-import { WorkingHistory } from './entities/working-history.entity';
-import { WorkingHistoryController } from './working-history.controller';
+import { RouterModule } from '@nestjs/core';
+import { WorkingHistoryCMSModule } from './modules/working-history-cms.module';
 @Module({
-  imports: [TypeOrmModule.forFeature([WorkingHistory])],
-  controllers: [WorkingHistoryController],
-  providers: [WorkingHistoryService]
+  imports: [
+    WorkingHistoryCMSModule,
+    RouterModule.register([
+      {
+        path: 'v1/admin',
+        module: WorkingHistoryCMSModule
+      },
+    ])
+  ],
 })
 export class WorkingHistoryModule {}
