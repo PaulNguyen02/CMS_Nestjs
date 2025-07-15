@@ -7,6 +7,7 @@ class validator
 type orm
 eslint
 slugify
+throttler
 
 Dò code thừa 
 npx eslint .
