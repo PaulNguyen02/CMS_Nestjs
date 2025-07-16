@@ -1,7 +1,8 @@
 import { 
     Controller, 
     Get,
-    Query
+    Query,
+    Param
  } from '@nestjs/common';
 import { PostsService } from '../posts.service';
 import { GetPostDto } from '../dto/get-post.dto';
@@ -13,18 +14,19 @@ import { Public } from '@/common/decorators/public.decorator';
 @Controller('posts')
 export class PostsClientController {
     constructor (private readonly postService: PostsService){}
+
     @Public()
     @Get()
     async getPaginatePost(@Query() query: PostParam): Promise<ApiResponse<PaginationDto<GetPostDto>>>{
         const res = await this.postService.getPaginatePost(query);
         return ApiResponse.success<PaginationDto<GetPostDto>>(res)
-    }
-
+    }    
+    
     @Public()
-    @Get('get-some')
-    async getSomePosts(): Promise<ApiResponse<GetPostDto[]>>{
-        const res = await this.postService.getSomePosts()
-        return ApiResponse.success<GetPostDto[]>(res)
+    @Get(':slug')
+    async getDetailPost(@Param('slug') slug: string): Promise<ApiResponse<GetPostDto>>{
+        const res = await this.postService.getDetailPost(slug)
+        return ApiResponse.success<GetPostDto>(res)
     }
 
 }

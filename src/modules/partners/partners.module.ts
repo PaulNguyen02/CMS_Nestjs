@@ -8,11 +8,11 @@ import { PartnersClientModule } from './modules/partners-client.module';
     PartnersClientModule,
     RouterModule.register([
       {
-        path: 'v1/admin',
+        path: 'v1/cms',
         module: PartnersCMSModule,
       },
       {
-        path: 'v1/user',
+        path: 'v1/client',
         module: PartnersClientModule,
       }
     ])

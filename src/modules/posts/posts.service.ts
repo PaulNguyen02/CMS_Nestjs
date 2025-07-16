@@ -79,27 +79,11 @@ export class PostsService{
         });
         return res;    
     }
-    
 
-    async getSomePosts():Promise<GetPostDto[]>{
-        const qb = this.postsRepository
-        .createQueryBuilder('post')
-        .leftJoinAndSelect('post.categories', 'category')
-        .leftJoinAndSelect('post.relatedPosts', 'relatedPosts')
-        qb.take(5);
-        const items = await qb.getMany();
-        const data = plainToInstance(GetPostDto, items, {
-            excludeExtraneousValues: true,
-        });
-        return data;
-    }
 
     async getPaginatePost(query: PostParam): Promise<PaginationDto<GetPostDto>>{
         const { page = 1, limit = 10, search, categoryName } = query;
-        const qb = this.postsRepository
-            .createQueryBuilder('post')
-            .leftJoinAndSelect('post.categories', 'category')
-            .leftJoinAndSelect('post.relatedPosts', 'relatedPosts') /*Lấy khóa ngoại*/
+        const qb = this.postsRepository.createQueryBuilder('post')
 
         if (search) {
             qb.andWhere(
@@ -126,6 +110,22 @@ export class PostsService{
         });
         return res;
     }
+
+
+    async getDetailPost(slug: string): Promise<GetPostDto>{
+        const qb = this.postsRepository
+        .createQueryBuilder('post')
+        .leftJoinAndSelect('post.categories', 'category')
+        .leftJoinAndSelect('post.relatedPosts', 'relatedPosts')
+         .where('post.slug = :slug', { slug });
+        const item = await qb.getOne();
+        const data = plainToInstance(GetPostDto, item, {
+            excludeExtraneousValues: true,
+        });
+        return data;
+    }
+
+    
 
     async deletePost(postId: string): Promise<GetPostDto>{
         const post = await this.postsRepository.findOne({ where: { id: postId } });  

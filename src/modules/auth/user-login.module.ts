@@ -7,7 +7,7 @@ import { UserLoginCMSModule } from './modules/user-login-cms.module';
     UserLoginCMSModule,
     RouterModule.register([
       {
-        path: 'v1/admin',
+        path: 'v1/cms',
         module: UserLoginCMSModule,
       }
     ])

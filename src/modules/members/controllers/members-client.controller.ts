@@ -1,5 +1,6 @@
 import { Controller, 
     Get,
+    Param,
     Query
 } from '@nestjs/common';
 import { MembersService } from '../members.service';
@@ -21,10 +22,10 @@ export class MembersClientController {
     }
 
     @Public()
-    @Get('get-some')
-    async getSomeMembers() : Promise<ApiResponse<GetMemberDto[]>>{
-        const res = await this.memberService.getSomeMembers();
-        return ApiResponse.success<GetMemberDto[]>(res)
+    @Get(':slug')
+    async getDetailMember(@Param('slug') slug: string) : Promise<ApiResponse<GetMemberDto>>{
+        const res = await this.memberService.getDetailMember(slug);
+        return ApiResponse.success<GetMemberDto>(res)
     }
 
 }

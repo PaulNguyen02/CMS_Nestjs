@@ -9,11 +9,11 @@ import { FollowUsClientModule } from './modules/follow-us-client.module';
     FollowUsClientModule,
     RouterModule.register([
       {
-        path: 'v1/admin',
+        path: 'v1/cms',
         module: FollowUsCMSModule,
       },
       {
-        path: 'v1/user',
+        path: 'v1/client',
         module: FollowUsClientModule,
       }
     ])

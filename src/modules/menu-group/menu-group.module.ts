@@ -7,7 +7,7 @@ import { MenuGroupCMSModule } from './modules/menu-group-cms.module';
     MenuGroupCMSModule,
     RouterModule.register([
       {
-        path: 'v1/admin',
+        path: 'v1/cms',
         module: MenuGroupCMSModule,
       },
     ])

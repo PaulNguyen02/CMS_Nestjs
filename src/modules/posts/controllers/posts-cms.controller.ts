@@ -37,6 +37,14 @@ export class PostsCMSController {
         return ApiResponse.success<PaginationDto<GetPostDto>>(res)
     }
 
+    @Public()
+    @Get(':slug')
+    async getDetailPost(@Param('slug') slug: string): Promise<ApiResponse<GetPostDto>>{
+        const res = await this.postService.getDetailPost(slug);
+        return ApiResponse.success<GetPostDto>(res)
+    }
+    
+
     @Put(':id')
     async updatePost(
         @Param('id') id: string, 
