@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsPhoneNumber } from "@nestjs/class-validator";
+import { IsString, IsEmail} from "@nestjs/class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 export class CreateMessageDto{
 
@@ -7,7 +7,7 @@ export class CreateMessageDto{
     fullName: string;
 
     @ApiProperty()    
-    @IsPhoneNumber()
+    @IsString()
     phoneNumber: string;
 
     @ApiProperty()    

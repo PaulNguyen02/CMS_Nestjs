@@ -62,24 +62,11 @@ export class MembersService{
         return res;
     }
 
-    async getSomeMembers(): Promise<GetMemberDto[]>{
-        const qb = await this.memberRepository
-            .createQueryBuilder('member')
-            .leftJoinAndSelect('member.files','files')
-            .leftJoinAndSelect('member.workingHistory', 'workingHistory')
-        qb.take(5)
-        const items = await qb.getMany()
-        const data = plainToInstance(GetMemberDto, items,{excludeExtraneousValues: true})
-        return data;
-    }
 
     async getPaginateMember(query: MemberParam): Promise<PaginationDto<GetMemberDto>>{
         const { page = 1, limit = 10, search } = query;
 
-        const qb = this.memberRepository
-            .createQueryBuilder('member')
-            .leftJoinAndSelect('member.files', 'files')
-            .leftJoinAndSelect('member.workingHistory', 'workingHistory')
+        const qb = this.memberRepository.createQueryBuilder('member')
         if (search) {
             qb.andWhere(
                 'member.fullName LIKE :search OR member.position LIKE :search',
@@ -98,6 +85,19 @@ export class MembersService{
             lastPage: Math.ceil(total / limit),
         });
         return res;        
+    }
+
+    async getDetailMember(slug: string): Promise<GetMemberDto>{
+        const qb = this.memberRepository
+            .createQueryBuilder('member')
+            .leftJoinAndSelect('member.files', 'files')
+            .leftJoinAndSelect('member.workingHistory', 'workingHistory')
+            .where('member.slug = :slug', { slug })
+        const item = await qb.getOne()
+        const data = plainToInstance(GetMemberDto, item, {
+            excludeExtraneousValues: true,
+        });
+        return data;        
     }
 
     async deleteMember(memberId: string): Promise<GetMemberDto>{

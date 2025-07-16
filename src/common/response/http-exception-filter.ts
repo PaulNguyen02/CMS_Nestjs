@@ -95,7 +95,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     return res.status(500).json(ApiResponse.error({
       code: 500,
-      message: 'Lỗi không xác định.',
+      message: (exception as any)?.message || 'Lỗi không xác định.'
     }));
   }
 }

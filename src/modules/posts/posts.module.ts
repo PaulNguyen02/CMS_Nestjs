@@ -9,11 +9,11 @@ import { PostsClientModule } from './modules/posts-client.module';
     PostsClientModule,
     RouterModule.register([
       {
-        path: 'v1/admin',
+        path: 'v1/cms',
         module: PostsCMSModule,
       },
       {
-        path: 'v1/user',
+        path: 'v1/client',
         module: PostsClientModule,
       },
     ])

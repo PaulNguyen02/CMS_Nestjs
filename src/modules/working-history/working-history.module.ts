@@ -6,7 +6,7 @@ import { WorkingHistoryCMSModule } from './modules/working-history-cms.module';
     WorkingHistoryCMSModule,
     RouterModule.register([
       {
-        path: 'v1/admin',
+        path: 'v1/cms',
         module: WorkingHistoryCMSModule
       },
     ])

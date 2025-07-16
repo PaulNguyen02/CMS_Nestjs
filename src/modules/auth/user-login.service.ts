@@ -15,18 +15,6 @@ export class UserLoginService{
         private readonly jwtService: JwtService
     ) {}
 
-    async findByUsername(username: string): Promise<userLogin | null> {
-        return this.userRepository.findOne({ where: { username } });
-    }
-
-    async getLoginProfile(username: string): Promise<GetUserLoginDto| null> {
-        const loginProfile =  this.userRepository.findOne({ where: { username } });
-        const res = plainToInstance(GetUserLoginDto, loginProfile, {
-            excludeExtraneousValues: true,
-        });
-        return res;
-    }
-
     async Login(dto: CreateUserLoginDto, userAgent: string): Promise<string> {
         const { username, password} = dto;
 
@@ -48,7 +36,7 @@ export class UserLoginService{
         }else{
             const isMatch = await bcrypt.compare(password, user.password);
             if (!isMatch) {
-            throw new UnauthorizedException('Sai mật khẩu');
+                throw new UnauthorizedException('Sai mật khẩu');
             }
             await this.userRepository.update(user.id, {
                 userAgent,
@@ -64,13 +52,6 @@ export class UserLoginService{
         const res = await this.userRepository.find();
         return plainToInstance(GetUserLoginDto, res, {
             excludeExtraneousValues: true,
-        });
-    }
-
-    async updateLoginMeta(userId: string, userAgent: string): Promise<void> {
-        await this.userRepository.update(userId, {
-            userAgent: userAgent,
-            loginAt: new Date(),
         });
     }
 }

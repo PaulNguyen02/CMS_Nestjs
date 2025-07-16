@@ -8,10 +8,11 @@ import { MenuItemModule } from '@/modules/menu-items/menu-items.module';
 import { MessageModule } from '@modules/messages/messages.module';
 import { PartnersModule } from '@modules/partners/partners.module';
 import { PostsModule } from '@modules/posts/posts.module';
-import { UserLoginModule } from '@modules/user-login/user-login.module';
+import { UserLoginModule } from '@/modules/auth/user-login.module';
 import { WorkingHistoryModule } from '@modules/working-history/working-history.module';
 import { DatabaseModule } from '@database/database.module';
 import { Cache } from '@/common/cache/cache/cache.module';
+import { ThrottleModule } from '../utils/throttler.module';
 export const appModules = [
     Cache,
     DatabaseModule,
@@ -26,5 +27,6 @@ export const appModules = [
     PartnersModule,
     UserLoginModule,
     WorkingHistoryModule,
-    ContactInformationModule
+    ContactInformationModule,
+    ThrottleModule
 ]

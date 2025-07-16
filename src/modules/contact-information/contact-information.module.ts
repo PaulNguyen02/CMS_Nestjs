@@ -9,11 +9,11 @@ import { ContactCMSModule } from './modules/contact-cms.module';
     ContactClientModule,
     RouterModule.register([
       {
-        path: 'v1/admin',
+        path: 'v1/cms',
         module: ContactCMSModule,
       },
       {
-        path: 'v1/user',
+        path: 'v1/client',
         module: ContactClientModule,
       }
     ])

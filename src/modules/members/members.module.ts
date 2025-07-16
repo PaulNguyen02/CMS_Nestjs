@@ -8,11 +8,11 @@ import { MemberClientModule } from './modules/members-client.module';
     MemberClientModule,
     RouterModule.register([
       {
-        path: 'v1/admin',
+        path: 'v1/cms',
         module: MemberCMSModule,
       },
       {
-        path: 'v1/user',
+        path: 'v1/client',
         module: MemberClientModule,
       },
     ])

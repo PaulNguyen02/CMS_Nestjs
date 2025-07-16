@@ -59,8 +59,7 @@ export class ContactInformationService {
         if (cached) {
             return cached;
         }
-        const qb = this.contactRepository
-            .createQueryBuilder('information');
+        const qb = this.contactRepository.createQueryBuilder('information');
 
         if (search) {
             qb.andWhere(

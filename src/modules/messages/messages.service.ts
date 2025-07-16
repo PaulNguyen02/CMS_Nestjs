@@ -30,7 +30,7 @@ export class MessagesService{
             email: dto.email,
             content: dto.content,
             createdAt: new Date(),
-            createdBy: username 
+            createdBy: dto.fullName 
         });
         const saved = await this.messageRepository.save(newMessage);
         const res = plainToInstance(GetMessageDto, saved, {

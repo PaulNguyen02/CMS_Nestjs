@@ -7,7 +7,7 @@ import { CategoriesCMSModule } from './modules/categories-cms.module';
     CategoriesCMSModule,
     RouterModule.register([
       {
-        path: 'v1/admin',
+        path: 'v1/cms',
         module: CategoriesCMSModule,
       },
     ])

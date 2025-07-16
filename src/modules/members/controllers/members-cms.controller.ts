@@ -37,6 +37,13 @@ export class MembersCMSController {
         return ApiResponse.success<PaginationDto<GetMemberDto>>(res)
     }
 
+    @Public()
+    @Get(':slug')
+    async getDetailMember(@Param('slug') slug: string) : Promise<ApiResponse<GetMemberDto>>{
+        const res = await this.memberService.getDetailMember(slug);
+        return ApiResponse.success<GetMemberDto>(res)
+    }
+
     @Put(':id')
     async updateMember(
         @Param('id') id: string, 

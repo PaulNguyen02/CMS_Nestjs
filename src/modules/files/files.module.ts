@@ -6,7 +6,7 @@ import { FilesCMSModule } from './modules/files-cms.module';
     FilesCMSModule,
     RouterModule.register([
       {
-        path: 'v1/admin',
+        path: 'v1/cms',
         module: FilesCMSModule,
       },
     ])

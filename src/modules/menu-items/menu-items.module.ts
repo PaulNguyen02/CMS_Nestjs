@@ -9,11 +9,11 @@ import { MenuItemClientModule } from './modules/menu-items-client.module';
     MenuItemClientModule,
     RouterModule.register([
       {
-        path: 'v1/admin',
+        path: 'v1/cms',
         module: MenuItemCMSModule,
       },
       {
-        path: 'v1/user',
+        path: 'v1/client',
         module: MenuItemClientModule,
       },
     ])
