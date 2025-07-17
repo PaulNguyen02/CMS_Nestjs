@@ -1,9 +1,7 @@
-import { IsString, IsBoolean, IsArray, IsOptional, ValidateNested } from "@nestjs/class-validator";
+import { IsString, IsBoolean, IsArray, IsOptional, ValidateIf } from "@nestjs/class-validator";
+import { Optional } from "@nestjs/common";
 import { ApiProperty } from "@nestjs/swagger";
-import { Type } from "class-transformer";
-import { CreateRelatedPostDto } from "./create-related-post.dto";
-export class CreatePostDto {
-    
+export class CreatePostDto {  
     @ApiProperty()
     @IsString()
     title: string;
@@ -20,7 +18,8 @@ export class CreatePostDto {
     @IsBoolean()
     isActived: boolean;
 
-    @ApiProperty()
+    @ApiProperty({required: false})
+    @IsOptional() //đứng trước để test trước
     @IsString()
     banner: string; // Foreign key đến Files (file.id)
 
@@ -28,11 +27,8 @@ export class CreatePostDto {
     @IsString()
     categoryId: string; // Foreign key đến Categories (categories.id)
 
-    @ApiProperty({ type: [CreateRelatedPostDto], required: false })
+    @ApiProperty()
     @IsOptional()
     @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => CreateRelatedPostDto)
-    relatedPosts?: CreateRelatedPostDto[];
-
+    relatedId?: string[];
 }

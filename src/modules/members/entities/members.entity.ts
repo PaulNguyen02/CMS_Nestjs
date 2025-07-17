@@ -15,7 +15,7 @@ export class Member extends BaseEntity{
     @Column({name:'fullname'})
     fullName: string;
 
-    @Column()
+    @Column({ unique: true })
     slug: string;
 
     @Column()

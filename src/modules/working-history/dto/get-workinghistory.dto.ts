@@ -14,9 +14,6 @@ export class GetWorkingHistoryDto extends GetBaseDto{
     @Expose({ name: 'categories' })
     categories: string;
 
-    @Expose({ name: 'memberId' })
-    memberId: string; 
-
     @Expose()
     @Type(() => GetMemberDto) 
     member: GetMemberDto;
