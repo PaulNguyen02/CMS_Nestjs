@@ -6,7 +6,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Member } from './entities/members.entity';
-import { WorkingHistory } from '../working-history/entities/working-history.entity';
+import { WorkingHistory } from './entities/working-history.entity';
 import { GetMemberDto } from './dto/get-member.dto';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';

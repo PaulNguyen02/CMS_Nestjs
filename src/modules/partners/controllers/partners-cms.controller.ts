@@ -14,7 +14,6 @@ import { UpdatePartnerDto } from '../dto/update-partner.dto';
 import { PaginationDto } from '@/common/dto/pagination.dto';
 import { ApiResponse } from '@/common/response/api-response';
 import { PartnerParam } from '../dto/partner-param.dto';
-import { Public } from '@/common/decorators/public.decorator';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 
 @Controller('partners')
@@ -29,7 +28,6 @@ export class PartnersCMSController {
         return ApiResponse.success<GetPartnerDto>(result);
     }
 
-    @Public()
     @Get()
     async getPaginatePartner(@Query() query: PartnerParam) : Promise<ApiResponse<PaginationDto<GetPartnerDto>>>{
         const res = await this.partnerService.getPaginatePartner(query);

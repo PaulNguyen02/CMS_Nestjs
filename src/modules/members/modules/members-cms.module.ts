@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Member } from '../entities/members.entity';
-import { WorkingHistory } from '@/modules/working-history/entities/working-history.entity';
+import { WorkingHistory } from '../entities/working-history.entity';
 import { MembersService } from '../members.service';
 import { MembersCMSController } from '../controllers/members-cms.controller';
 @Module({

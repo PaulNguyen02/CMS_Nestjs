@@ -1,6 +1,8 @@
 import { 
     Controller,
     Post,
+    Delete,
+    Param,
     UseInterceptors,
     UploadedFile,
     Body
@@ -32,5 +34,11 @@ export class FilesCMSController {
         fileInfo.originalName = file.originalname;
         const result = await this.fileService.uploadFile(fileInfo, username);
         return ApiResponse.success(result);
+    }
+
+    @Delete(':id')
+    async deleteFile(@Param('id') id: string): Promise<ApiResponse<any>> {
+        await this.fileService.deleteFile(id);
+        return ApiResponse.success('File deleted successfully');
     }
 }

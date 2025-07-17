@@ -5,7 +5,7 @@ import {
     OneToMany } from "typeorm";
 import { BaseEntity } from "../../../common/entities/base.entity";
 import { Files } from "../../files/entities/files.entity";
-import { WorkingHistory } from "../../working-history/entities/working-history.entity";
+import { WorkingHistory } from "./working-history.entity";
 @Entity('members')
 export class Member extends BaseEntity{
 

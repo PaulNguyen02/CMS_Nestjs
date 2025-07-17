@@ -5,7 +5,7 @@ import {
     JoinColumn,
     ManyToOne } from "typeorm";
 import { BaseEntity } from "../../../common/entities/base.entity";
-import { Member } from "../../members/entities/members.entity";
+import { Member } from "./members.entity";
 
 @Entity('working_history')
 export class WorkingHistory extends BaseEntity{
