@@ -6,9 +6,7 @@ import {
     Delete,
     Query,
     Param,
-    Body,
-    Version,
-    UseGuards
+    Body
 } from '@nestjs/common';
 import { CategoriesService } from '../categories.service';
 import { GetCategoryDto } from '../dto/get-category.dto';
@@ -18,8 +16,6 @@ import { ApiResponse } from '@/common/response/api-response';
 import { PaginationDto } from '@/common/dto/pagination.dto';
 import { CategoryParam } from '../dto/category-param.dto';
 import { GetUser } from '@/common/decorators/get-user.decorator';
-import { Public } from '@/common/decorators/public.decorator';
-
 @Controller('categories')
 export class CategoriesCMSController {
     constructor(private readonly categoryService: CategoriesService) {}
@@ -35,7 +31,6 @@ export class CategoriesCMSController {
     }
 
     @Get()
-    @Public()
     async getPaginateCategory(@Query() query: CategoryParam
     ): Promise<ApiResponse<PaginationDto<GetCategoryDto>>>
     {

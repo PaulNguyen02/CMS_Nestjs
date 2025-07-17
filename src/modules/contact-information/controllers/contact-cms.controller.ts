@@ -14,7 +14,6 @@ import { CreateInformationDto } from '../dto/create-information.dto';
 import { UpdateInformationDto } from '../dto/update-information.dto';
 import { ContactInformationService } from '../contact-information.service';
 import { ContactInformationParam } from '../dto/contact-information-param.dto';
-import { Public } from '@/common/decorators/public.decorator';
 
 @Controller('contact-information')
 export class ContactInformationCMSController {
@@ -29,14 +28,12 @@ export class ContactInformationCMSController {
     }
 
     @Get()
-    @Public()
     async getInformation(@Query() query: ContactInformationParam): Promise<ApiResponse<GetInformationDto[]>>{
         const res = await this.contactInformationService.getInformation(query);
         return ApiResponse.success<GetInformationDto[]>(res)
     }
 
     @Get()
-    @Public()
     async showToClient(@Query() query: ContactInformationParam): Promise<ApiResponse<GetInformationDto[]>>{
         const res = await this.contactInformationService.getInformation(query);
         return ApiResponse.success<GetInformationDto[]>(res)

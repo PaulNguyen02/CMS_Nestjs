@@ -13,7 +13,6 @@ import { CreateFollowusDto } from '../dto/create-followus.dto';
 import { ApiResponse } from '@/common/response/api-response';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { FolowUsParam } from '../dto/followus-param.dto';
-import { Public } from '@/common/decorators/public.decorator';
 
 @Controller('follow-us')
 export class FollowUsCMSController {
@@ -29,7 +28,6 @@ export class FollowUsCMSController {
     }
 
     @Get()
-    @Public()
     async getFollowUs(@Query() query: FolowUsParam): Promise<ApiResponse<GetFollowusDto[]>>{
         const res = await this.followService.getFollowUs(query);
         return ApiResponse.success<GetFollowusDto[]>(res)

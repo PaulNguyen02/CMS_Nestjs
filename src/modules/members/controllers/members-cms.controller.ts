@@ -15,7 +15,6 @@ import { PaginationDto } from '@/common/dto/pagination.dto';
 import { ApiResponse } from '@/common/response/api-response';
 import { MemberParam } from '../dto/member-param.dto';
 import { GetUser } from '@/common/decorators/get-user.decorator';
-import { Public } from '@/common/decorators/public.decorator';
 
 @Controller('members')
 export class MembersCMSController {
@@ -30,14 +29,12 @@ export class MembersCMSController {
         return ApiResponse.success<GetMemberDto>(result);
     }
 
-    @Public()
     @Get()
     async getPaginateMember(@Query() query: MemberParam) : Promise<ApiResponse<PaginationDto<GetMemberDto>>>{
         const res = await this.memberService.getPaginateMember(query);
         return ApiResponse.success<PaginationDto<GetMemberDto>>(res)
     }
 
-    @Public()
     @Get(':slug')
     async getDetailMember(@Param('slug') slug: string) : Promise<ApiResponse<GetMemberDto>>{
         const res = await this.memberService.getDetailMember(slug);

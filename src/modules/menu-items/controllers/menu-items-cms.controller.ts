@@ -14,7 +14,6 @@ import { CreateMenuItemDto } from '../dto/create-menuitem.dto';
 import { UpdateMenuItemDto } from '../dto/update-menuitem.dto';
 import { ApiResponse } from '@/common/response/api-response';
 import { GetUser } from '@/common/decorators/get-user.decorator';
-import { Public } from '@/common/decorators/public.decorator';
 import { MenuItemParam } from '../dto/menu-item-param.dto';
 
 @Controller('menu-items')
@@ -30,7 +29,6 @@ export class MenuItemsCMSController {
         return ApiResponse.success<GetMenuItemDto>(result);
     }
 
-    @Public()
     @Get()
     async getMenuItem(@Query() query: MenuItemParam): Promise<ApiResponse<GetMenuItemDto[]>>{
         const res = await this.menuitemService.getMenuItem(query);

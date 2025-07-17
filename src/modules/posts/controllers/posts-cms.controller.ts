@@ -16,7 +16,6 @@ import { ApiResponse } from '@/common/response/api-response';
 import { PaginationDto } from '@/common/dto/pagination.dto';
 import { PostParam } from '../dto/post-param.dto';
 import { GetUser } from '@/common/decorators/get-user.decorator';
-import { Public } from '@/common/decorators/public.decorator';
 
 @Controller('posts')
 export class PostsCMSController {
@@ -30,20 +29,17 @@ export class PostsCMSController {
         return ApiResponse.success<GetPostDto>(result);
     }
 
-    @Public()
     @Get()
     async getPaginatePost(@Query() query: PostParam): Promise<ApiResponse<PaginationDto<GetPostDto>>>{
         const res = await this.postService.getPaginatePost(query);
         return ApiResponse.success<PaginationDto<GetPostDto>>(res)
     }
 
-    @Public()
     @Get(':slug')
     async getDetailPost(@Param('slug') slug: string): Promise<ApiResponse<GetPostDto>>{
         const res = await this.postService.getDetailPost(slug);
         return ApiResponse.success<GetPostDto>(res)
     }
-    
 
     @Put(':id')
     async updatePost(

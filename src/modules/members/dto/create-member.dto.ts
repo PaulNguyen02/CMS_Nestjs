@@ -2,7 +2,7 @@ import { Type } from "class-transformer";
 import { ValidateNested } from "@nestjs/class-validator";
 import { IsString, IsArray } from "@nestjs/class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { CreateWorkingHistoryDto } from "@/modules/working-history/dto/create-workinghistory.dto";
+import { CreateWorkingHistoryDto } from "./create-workinghistory.dto";
 export class CreateMemberDto{   
     
     @ApiProperty()

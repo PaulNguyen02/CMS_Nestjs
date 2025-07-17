@@ -25,7 +25,6 @@ export class LoginCMSController {
     }
 
     @Get()
-    @Public()
     async getLoginHistory(): Promise<ApiResponse<GetUserLoginDto[]>> {
         const result = await this.userLoginService.getLoginHistory();
         return ApiResponse.success<GetUserLoginDto[]>(result);
