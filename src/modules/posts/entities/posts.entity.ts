@@ -2,7 +2,7 @@ import {
     Entity, 
     PrimaryGeneratedColumn, 
     Column,  
-    OneToOne,
+    OneToMany,
     ManyToMany,
     ManyToOne,
     JoinColumn,
@@ -15,7 +15,7 @@ export class Posts extends BaseEntity{
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column()
+    @Column({ unique: true })
     slug: string;
 
     @Column()
@@ -28,17 +28,16 @@ export class Posts extends BaseEntity{
     content: string;
 
     @Column({name:'is_active'})
-    isActive: boolean;
+    isActived: boolean;
 
-    @Column()
-    banner: string;
+    @Column({nullable: true})
+    banner?: string;
 
     @Column({name:'category_id'})
     categoryId: string;
 
-    @OneToOne(() => Files, file => file.posts, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'banner' }) // Ràng buộc khóa ngoại
-    banners: Files;
+    @OneToMany(() => Files, file => file.posts, {nullable: true})
+    banners?: Files[];
         
     @ManyToOne(() => Categories, (categories) => categories.posts, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'category_id' }) 

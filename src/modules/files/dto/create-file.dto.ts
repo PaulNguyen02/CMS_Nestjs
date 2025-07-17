@@ -6,9 +6,9 @@ export class CreateFileDto{
     @IsOptional()
     originalName: string;
 
-    @ApiProperty()
+    @ApiProperty({required: false})
+    @IsOptional()       //cho nó đứng trc để tránh validation
     @IsString()
-    @IsOptional()
     memberId: string; 
 
 }

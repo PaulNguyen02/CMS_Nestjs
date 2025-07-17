@@ -1,13 +1,12 @@
 import {
-    Inject, 
     Injectable, 
     NotFoundException } from '@nestjs/common';
 import { slugString } from '@/common/utils/string.util';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import slugify from 'slugify';
 import { Member } from './entities/members.entity';
+import { WorkingHistory } from '../working-history/entities/working-history.entity';
 import { GetMemberDto } from './dto/get-member.dto';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
@@ -18,7 +17,9 @@ export class MembersService{
 
     constructor(
         @InjectRepository(Member)
-        private readonly memberRepository: Repository<Member>
+        private readonly memberRepository: Repository<Member>,
+        @InjectRepository(WorkingHistory)
+        private readonly workingHistoryRepository: Repository<WorkingHistory>,
     ) {}
 
     async createMember(dto: CreateMemberDto, username: string): Promise<GetMemberDto>{
@@ -43,21 +44,66 @@ export class MembersService{
         return res;
     }
 
-    async updateMember(memberId: string, dto: UpdateMemberDto, username: string): Promise<GetMemberDto>{
-        if(dto.fullName){
-            const slug = slugString(dto.fullName)
-            await this.memberRepository.update(memberId, {
-                ...dto,
-                slug: slug,
-                createdAt: new Date(),
-                createdBy: username
-            });
-        }
-        const updatedMember = await this.memberRepository.findOne({
-            where: { id: memberId }
+    async updateMember(memberId: string, dto: UpdateMemberDto, username: string): Promise<GetMemberDto> 
+    {
+        // Tìm Member với workingHistory
+        const member = await this.memberRepository.findOne({
+        where: { id: memberId },
+        relations: ['workingHistory'],
         });
-        const res = plainToInstance(GetMemberDto, updatedMember, {
-            excludeExtraneousValues: true,
+
+        if (!member) {
+            throw new NotFoundException(`Không tìm thấy thành viên có ID ${memberId}`);
+        }
+
+        // Cập nhật thông tin cơ bản của Member
+        const updateData: Partial<Member> = {
+            fullName: dto.fullName,
+            position: dto.position,
+            slug: dto.fullName ? slugString(dto.fullName) : member.slug,
+            createdAt: new Date(),
+            createdBy: username,
+        };
+        await this.memberRepository.update(memberId, updateData);
+
+        // Xử lý workingHistory
+        if (dto.workingHistory) {
+        // Lấy danh sách workingHistory hiện tại
+            const currentHistories = member.workingHistory || [];
+
+            // Xóa tất cả workingHistory hiện tại (nếu cần thay thế toàn bộ)
+            if (currentHistories.length > 0) {
+                await this.workingHistoryRepository.delete(
+                currentHistories.map((history) => history.id),
+                );
+                member.workingHistory = [];
+            }
+
+            // Thêm workingHistory mới từ DTO
+            const newHistories = dto.workingHistory.map((history) =>
+                this.workingHistoryRepository.create({
+                ...history,
+                createdAt: new Date(),
+                createdBy: username,
+                member, // Gán quan hệ với Member
+                }),
+            );
+            await this.workingHistoryRepository.save(newHistories);
+            member.workingHistory = newHistories;
+        }
+
+        // Lưu Member sau khi cập nhật quan hệ
+        await this.memberRepository.save(member);
+
+        // Tải lại Member để đảm bảo dữ liệu mới nhất
+        const refreshedMember = await this.memberRepository.findOne({
+            where: { id: memberId },
+            relations: ['workingHistory'],
+        });
+
+        // Chuyển sang DTO
+        const res = plainToInstance(GetMemberDto, refreshedMember, {
+        excludeExtraneousValues: true,
         });
         return res;
     }
@@ -101,14 +147,25 @@ export class MembersService{
     }
 
     async deleteMember(memberId: string): Promise<GetMemberDto>{
-        const member = await this.memberRepository.findOne({ where: { id: memberId } });        
+        const member = await this.memberRepository.findOne({
+            where: { id: memberId },
+            relations: ['workingHistory'],
+        });
+
         if (!member) {
-            throw new NotFoundException(`User with ID ${memberId} not found`);
-        }        
-        const delete_member = await this.memberRepository.remove(member); // hoặc .softRemove nếu có soft-delete
-        const res = plainToInstance(GetMemberDto, delete_member,{
+            throw new NotFoundException(`Không tìm thấy thành viên có ID ${memberId}`);
+        }
+
+        const workingHistories = member.workingHistory || [];
+        if (workingHistories.length > 0) {
+            await this.workingHistoryRepository.remove(workingHistories);
+        }
+
+        const deletedMember = await this.memberRepository.remove(member);
+
+        const res = plainToInstance(GetMemberDto, deletedMember, {
             excludeExtraneousValues: true,
-        })
+        });
         return res;
     }
 }

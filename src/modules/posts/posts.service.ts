@@ -25,35 +25,25 @@ export class PostsService{
     ) {}
 
     async createPost(dto: CreatePostDto, username: string): Promise<GetPostDto>{
-        let saved;
         const slug = slugString(dto.title)
-        if(dto.relatedPosts){
-            const relatedEntities = dto.relatedPosts.map(r =>
-                this.postsRepository.create({
-                title: r.title,
-                summary: r.summary,
-                content: r.content,
-                isActive: r.isActived,
-                banner: r.banner,
-                slug: slug,
-                categoryId: r.categoryId,
-                createdBy: username,
-                createdAt: new Date(),
-                })
-            ) || [];
-            const newPost = this.postsRepository.create({
-                title: dto.title,
-                summary: dto.summary,
-                content: dto.content,
-                isActive: dto.isActived,
-                banner: dto.banner,
-                slug: slug,
-                categoryId: dto.categoryId,
-                createdBy: username,
-                createdAt: new Date(),
-                relatedPosts: relatedEntities,
-            });
-            saved = await this.postsRepository.save(newPost);
+        const newPost = this.postsRepository.create({
+            title: dto.title,
+            summary: dto.summary,
+            content: dto.content,
+            isActived: dto.isActived,
+            banner: dto.banner,
+            slug: slug,
+            categoryId: dto.categoryId,
+            createdBy: username,
+            createdAt: new Date(),
+        })
+        const saved = await this.postsRepository.save(newPost);
+        if(dto.relatedId && dto.relatedId.length > 0 ){
+             const relatedPosts = await this.postsRepository.findByIds(dto.relatedId);
+            // Gán các bài viết liên quan vào bài viết mới
+            saved.relatedPosts = relatedPosts;
+            // Cập nhật lại bài viết với các bài viết liên quan
+            await this.postsRepository.save(saved);
         }
         const res = plainToInstance(GetPostDto, saved, {
             excludeExtraneousValues: true,
@@ -61,23 +51,49 @@ export class PostsService{
         return res;
     }
 
-    async updatePost (postId: string, dto: UpdatePostDto, username: string): Promise<GetPostDto>{             
-        if(dto.title){
-            const slug = slugString(dto.title)
-            await this.postsRepository.update(postId, {
-                ...dto,
-                slug: slug,
-                createdAt: new Date(),
-                createdBy: username
-            });
-        }
+    async updatePost(postId: string, dto: UpdatePostDto, username: string): Promise<GetPostDto> {
+        // Lấy thông tin bài viết hiện tại
         const updatedPost = await this.postsRepository.findOne({
-            where: { id: postId }
+            where: { id: postId },
+            relations: ['relatedPosts'], // Lấy các bài viết liên quan
         });
+
+        if (!updatedPost) {
+            throw new Error('Không tìm thấy bài viết');
+        }
+
+        // Cập nhật các trường từ DTO
+        if (dto.title) {
+            updatedPost.title = dto.title;
+            updatedPost.slug = slugString(dto.title);  // Cập nhật slug nếu có tiêu đề mới
+        }
+
+        if (dto.summary) updatedPost.summary = dto.summary;
+        if (dto.content) updatedPost.content = dto.content;
+        
+        // Cập nhật trạng thái isActive
+        if (dto.isActived !== undefined) updatedPost.isActived = dto.isActived;
+
+        // Cập nhật danh mục nếu có
+        if (dto.categoryId) updatedPost.categoryId = dto.categoryId;
+
+        updatedPost.createdBy = username;
+        updatedPost.createdAt = new Date();
+
+        // Cập nhật các bài viết liên quan
+        if (dto.relatedId && dto.relatedId.length > 0) {
+            const relatedPosts = await this.postsRepository.findByIds(dto.relatedId);
+            updatedPost.relatedPosts = relatedPosts;  // Cập nhật bài viết liên quan
+        } 
+
+        await this.postsRepository.save(updatedPost);
+
+        // Chuyển đổi bài viết thành DTO và trả về
         const res = plainToInstance(GetPostDto, updatedPost, {
             excludeExtraneousValues: true,
         });
-        return res;    
+
+        return res;
     }
 
 
@@ -126,17 +142,36 @@ export class PostsService{
     }
 
     
+    async deletePost(postId: string): Promise<GetPostDto> {
+        // Tìm bài viết cần xóa, load cả quan hệ relatedPosts và relatedByPosts
+        const post = await this.postsRepository.findOne({
+            where: { id: postId },
+            relations: ['relatedPosts', 'relatedPosts.relatedByPosts'], // Load quan hệ hai chiều
+        });
 
-    async deletePost(postId: string): Promise<GetPostDto>{
-        const post = await this.postsRepository.findOne({ where: { id: postId } });  
         if (!post) {
-            throw new NotFoundException(`User with ID ${postId} not found`);
+            throw new NotFoundException(`Không tìm thấy bài viết có ID ${postId}`);
         }
-        const delete_post = await this.postsRepository.remove(post); // hoặc .softRemove nếu có soft-delete
-        const res = plainToInstance(GetPostDto, delete_post,{
-            excludeExtraneousValues: true,
-        })
+
+        // Xóa mối quan hệ từ các bài viết liên quan
+        if (post.relatedPosts && post.relatedPosts.length > 0) {
+            for (const relatedPost of post.relatedPosts) {
+                if (relatedPost.relatedByPosts) {
+                // Lọc bỏ bài viết hiện tại khỏi relatedByPosts của relatedPost
+                relatedPost.relatedByPosts = relatedPost.relatedByPosts.filter(p => p.id !== postId);
+                await this.postsRepository.save(relatedPost); // Lưu lại thay đổi
+                }
+            }
+        }
+
+        // Xóa bài viết
+        const deletedPost = await this.postsRepository.remove(post); // Hoặc sử dụng softRemove nếu cần soft delete
+
+        // Chuyển đối tượng xóa sang DTO
+        const res = plainToInstance(GetPostDto, deletedPost, {
+        excludeExtraneousValues: true,
+        });
         return res;
     }
-    
+
 }

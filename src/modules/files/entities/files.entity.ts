@@ -22,7 +22,7 @@ export class Files extends BaseEntity{
     @Column()
     url: string;
 
-    @Column({name: 'member_id'})
+    @Column({name: 'member_id', nullable: true})
     memberId?: string;
 
     @OneToOne(() => Partners, partner => partner.file)
@@ -34,7 +34,10 @@ export class Files extends BaseEntity{
     @OneToOne(() => followUs, followUs => followUs.file)
     followUs: followUs;
 
-    @ManyToOne(() => Member, (member) => member.files, { onDelete: 'CASCADE' })
+    @ManyToOne(() => Member, (member) => member.files, { 
+        onDelete: 'CASCADE',  
+        nullable: true 
+    })
     @JoinColumn({ name: 'member_id' })
     member: Member;
 } 

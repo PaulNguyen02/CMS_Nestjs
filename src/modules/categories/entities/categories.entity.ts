@@ -14,7 +14,7 @@ export class Categories extends BaseEntity{
     @Column()
     name: string;
 
-    @Column()
+    @Column({ unique: true })
     slug: string;
 
     @OneToMany(() => Posts, (post) => post.categories)
