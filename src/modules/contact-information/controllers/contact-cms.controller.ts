@@ -33,12 +33,6 @@ export class ContactInformationCMSController {
         return ApiResponse.success<GetInformationDto[]>(res)
     }
 
-    @Get()
-    async showToClient(@Query() query: ContactInformationParam): Promise<ApiResponse<GetInformationDto[]>>{
-        const res = await this.contactInformationService.getInformation(query);
-        return ApiResponse.success<GetInformationDto[]>(res)
-    }
-
     @Put(':id')
     async updateInformation(
         @Param('id') id: string, 

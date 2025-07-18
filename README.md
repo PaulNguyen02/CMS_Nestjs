@@ -8,9 +8,11 @@ type orm
 eslint
 slugify
 throttler
+config
 
 Dò code thừa 
 npx eslint .
+
 
 Tạo file migration 
   npm run migration:create --name=initial         khi chưa có entity 
@@ -25,5 +27,6 @@ Lỗi ko thể đăng nhập vs user='sa' là chưa có db trong Sqlserver
 
 Nên để hàm get-dto chứa những thuộc tính cơ bản hoặc thuộc tính mảng
 Hàm pos-dto chứa thuộc tính khóa
+
 
 https://localhost:3001/
