@@ -1,11 +1,13 @@
-import { Repository } from 'typeorm';
+import { config } from 'dotenv';
 import * as fs from 'fs/promises';
+import { Repository } from 'typeorm';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Files } from './entities/files.entity';
 import { GetFileDto } from './dto/get-file.dto';
 import { CreateFileDto } from './dto/create-file.dto';
+config();
 @Injectable()
 export class FilesService{
     constructor(
@@ -19,7 +21,8 @@ export class FilesService{
         const year = now.getFullYear().toString();
         const month = (now.getMonth() + 1).toString().padStart(2, '0');
         const day = now.getDate().toString().padStart(2, '0');
-        const url = `https://localhost:3001/uploads/${year}/${month}/${day}/${file.originalName}`;
+        const path = `/uploads/${year}/${month}/${day}/${file.originalName}`;
+        const url =  process.env.WEB_HOST + path;
         if(!file.memberId){
             image = this.imageRepo.create({ 
                 originalName: file.originalName,
@@ -47,18 +50,20 @@ export class FilesService{
         // Tìm file trong CSDL
         const file = await this.imageRepo.findOne({ where: { id: fileId } });
         if (!file) {
-        throw new NotFoundException(`File with ID ${fileId} not found`);
+            throw new NotFoundException(`File with ID ${fileId} not found`);
         }
-        // Lấy đường dẫn file từ URL
-        const filePath = file.url.replace('https://localhost:3001', '.');
-        try {
-            // Xóa file vật lý
-            await fs.unlink(filePath);
-        } catch (error) {
-            // Nếu file không tồn tại trong thư mục, vẫn tiếp tục xóa bản ghi trong CSDL
-            console.warn(`File not found on disk: ${filePath}`);
+        if(process.env.WEB_HOST){
+            // Lấy đường dẫn file từ URL
+            const filePath = file.url.replace(process.env.WEB_HOST, '.');
+            try {
+                // Xóa file vật lý
+                await fs.unlink(filePath);
+            } catch (error) {
+                // Nếu file không tồn tại trong thư mục, vẫn tiếp tục xóa bản ghi trong CSDL
+                console.warn(`File not found on disk: ${filePath}`);
+            }
+            // Xóa bản ghi trong CSDL
+            await this.imageRepo.delete(fileId);
         }
-        // Xóa bản ghi trong CSDL
-        await this.imageRepo.delete(fileId);
-  }
+    }
 }
