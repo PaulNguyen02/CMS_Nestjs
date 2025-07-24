@@ -3,10 +3,10 @@ import { Controller,
     Query 
 } from '@nestjs/common';
 import { PartnersService } from '../partners.service';
-import { GetPartnerDto } from '../dto/get-partner.dto';
+import { GetPartnerDto } from '../dto/response/get-partner.dto';
 import { PaginationDto } from '@/common/dto/pagination.dto';
 import { ApiResponse } from '@/common/response/api-response';
-import { PartnerParam } from '../dto/partner-param.dto';
+import { PartnerParam } from '../dto/request/partner-param.dto';
 import { Public } from '@/common/decorators/public.decorator';
 
 @Controller('partners')

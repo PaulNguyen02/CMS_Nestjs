@@ -4,9 +4,9 @@ import {
     Query
  } from '@nestjs/common';
 import { FollowUsService } from '../follow-us.service';
-import { GetFollowusDto } from '../dto/get-followus.dto';
+import { GetFollowUsDto } from '../dto/response/get-follow-us.dto';
 import { ApiResponse } from '@/common/response/api-response';
-import { FolowUsParam } from '../dto/followus-param.dto';
+import { FollowUsParam } from '../dto/request/follow-us-param.dto';
 import { Public } from '@/common/decorators/public.decorator';
 
 @Controller('follow-us')
@@ -15,8 +15,8 @@ export class FollowUsClientController {
 
     @Get()
     @Public()
-    async getFollowUs(@Query() query: FolowUsParam): Promise<ApiResponse<GetFollowusDto[]>>{
+    async getFollowUs(@Query() query: FollowUsParam): Promise<ApiResponse<GetFollowUsDto[]>>{
         const res = await this.followService.getFollowUs(query);
-        return ApiResponse.success<GetFollowusDto[]>(res)
+        return ApiResponse.success<GetFollowUsDto[]>(res)
     }
 }

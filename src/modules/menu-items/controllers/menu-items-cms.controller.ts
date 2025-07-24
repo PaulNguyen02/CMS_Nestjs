@@ -9,16 +9,22 @@ import {
     Body 
 } from '@nestjs/common';
 import { MenuItemsService } from '../menu-items.service';
-import { GetMenuItemDto } from '../dto/get-menuitem.dto';
-import { CreateMenuItemDto } from '../dto/create-menuitem.dto';
-import { UpdateMenuItemDto } from '../dto/update-menuitem.dto';
+import { GetMenuItemDto } from '../dto/response/get-menuitem.dto';
+import { CreateMenuItemDto } from '../dto/request/create-menuitem.dto';
+import { UpdateMenuItemDto } from '../dto/request/update-menuitem.dto';
 import { ApiResponse } from '@/common/response/api-response';
 import { GetUser } from '@/common/decorators/get-user.decorator';
-import { MenuItemParam } from '../dto/menu-item-param.dto';
+import { MenuItemParam } from '../dto/request/menu-item-param.dto';
 
 @Controller('menu-items')
 export class MenuItemsCMSController {
     constructor(private readonly menuitemService: MenuItemsService) {}
+
+    @Get()
+    async getMenuItem(@Query() query: MenuItemParam): Promise<ApiResponse<GetMenuItemDto[]>>{
+        const res = await this.menuitemService.getMenuItem(query);
+        return ApiResponse.success<GetMenuItemDto[]>(res)
+    }
 
     @Post()
     async createMenuItem(
@@ -27,12 +33,6 @@ export class MenuItemsCMSController {
     ): Promise<ApiResponse<GetMenuItemDto>>{
         const result = await this.menuitemService.createMenuItem(dto, username);
         return ApiResponse.success<GetMenuItemDto>(result);
-    }
-
-    @Get()
-    async getMenuItem(@Query() query: MenuItemParam): Promise<ApiResponse<GetMenuItemDto[]>>{
-        const res = await this.menuitemService.getMenuItem(query);
-        return ApiResponse.success<GetMenuItemDto[]>(res)
     }
     
     @Put(':id')

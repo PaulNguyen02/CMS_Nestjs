@@ -5,10 +5,10 @@ import {
     Param
  } from '@nestjs/common';
 import { PostsService } from '../posts.service';
-import { GetPostDto } from '../dto/get-post.dto';
+import { GetPostDto } from '../dto/response/get-post.dto';
 import { ApiResponse } from '@/common/response/api-response';
 import { PaginationDto } from '@/common/dto/pagination.dto';
-import { PostParam } from '../dto/post-param.dto';
+import { PostParam } from '../dto/request/post-param.dto';
 import { Public } from '@/common/decorators/public.decorator';
 
 @Controller('posts')

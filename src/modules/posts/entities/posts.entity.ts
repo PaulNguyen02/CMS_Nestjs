@@ -18,17 +18,14 @@ export class Posts extends BaseEntity{
     @Column({ unique: true })
     slug: string;
 
-    @Column()
+    @Column({type: 'nvarchar'})
     title: string;
 
-    @Column()
+    @Column({nullable: true, type: 'nvarchar'})
     summary: string;
 
-    @Column()
+    @Column({nullable: true, type: 'nvarchar'})
     content: string;
-
-    @Column({name:'is_active'})
-    isActived: boolean;
 
     @Column({nullable: true})
     banner?: string;

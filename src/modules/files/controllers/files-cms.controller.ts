@@ -1,8 +1,10 @@
 import { 
     Controller,
+    Get,
     Post,
     Delete,
     Param,
+    Query,
     UseInterceptors,
     UploadedFile,
     Body
@@ -11,8 +13,8 @@ import { Express } from 'express';
 import { FilesService } from '../files.service';
 import { ApiConsumes, ApiBody} from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { GetFileDto } from '../dto/get-file.dto';
-import { CreateFileDto } from '../dto/create-file.dto';
+import { GetFileDto } from '../dto/response/get-file.dto';
+import { CreateFileDto } from '../dto/request/create-file.dto';
 import { uploadOption } from '@/common/const/upload-options.const';
 import { ApiResponse } from '@/common/response/api-response';
 import { uploadBody } from '@/common/const/upload-body.const';
@@ -21,6 +23,13 @@ import { GetUser } from '@/common/decorators/get-user.decorator';
 @Controller('files')
 export class FilesCMSController {
     constructor(private readonly fileService: FilesService) {}
+
+    @Get('search')
+    async searchFile(@Query('query') search: string): Promise<ApiResponse<GetFileDto[]>>
+    {
+        const res = await this.fileService.searchFile(search);
+        return ApiResponse.success<GetFileDto[]>(res);
+    }
 
     @Post()
     @ApiConsumes('multipart/form-data')

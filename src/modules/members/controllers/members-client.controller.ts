@@ -4,10 +4,10 @@ import { Controller,
     Query
 } from '@nestjs/common';
 import { MembersService } from '../members.service';
-import { GetMemberDto } from '../dto/get-member.dto';
+import { GetMemberDto } from '../dto/member-response/get-member.dto';
 import { PaginationDto } from '@/common/dto/pagination.dto';
 import { ApiResponse } from '@/common/response/api-response';
-import { MemberParam } from '../dto/member-param.dto';
+import { MemberParam } from '../dto/member-request/member-param.dto';
 import { Public } from '@/common/decorators/public.decorator';
 
 @Controller('members')

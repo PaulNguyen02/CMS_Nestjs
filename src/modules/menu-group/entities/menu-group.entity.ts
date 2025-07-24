@@ -10,13 +10,13 @@ export class menuGroup extends BaseEntity{
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column()
+    @Column({type: 'nvarchar'})
     name: string;
 
     @Column({ unique: true })
     slug: string;
 
-    @Column({name: 'isfooter'})
+    @Column({name: 'is_footer'})
     isFooter: boolean;
 
     @OneToMany(() => menuItem, (MenuItem) => MenuItem.MenuGroup)

@@ -8,16 +8,30 @@ import { Controller,
     Query
  } from '@nestjs/common';
 import { MenuGroupsService } from '../menu-group.service';
-import { GetMenuGroupDto } from '../dto/get-menugroup.dto';
-import { CreateMenuGroupDto } from '../dto/create-menugroup.dto';
-import { UpdateMenuGroupDto } from '../dto/update-menugroup.dto';
+import { GetMenuGroupDto } from '../dto/response/get-menugroup.dto';
+import { CreateMenuGroupDto } from '../dto/request/create-menugroup.dto';
+import { UpdateMenuGroupDto } from '../dto/request/update-menugroup.dto';
 import { ApiResponse } from '@/common/response/api-response';
-import { MenuGroupParam } from '../dto/menu-group-param.dto';
+import { MenuGroupParam } from '../dto/request/menu-group-param.dto';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 
 @Controller('menu-groups')
 export class MenuGroupsCMSController {
     constructor(private readonly menugroupService: MenuGroupsService) {}
+
+    @Get()
+    async getMenuGroup(@Query() query: MenuGroupParam): Promise<ApiResponse<GetMenuGroupDto[]>>{
+        const res = await this.menugroupService.getMenuGroup(query);
+        return ApiResponse.success<GetMenuGroupDto[]>(res)
+    }
+
+    @Get('search')
+    async searchMenuGroup(@Query('query') search: string): Promise<ApiResponse<GetMenuGroupDto[]>>
+    {
+        const res = await this.menugroupService.searchMenuGroup(search);
+        return ApiResponse.success<GetMenuGroupDto[]>(res);
+    }
+
     @Post()
     async createMenuGroup(
         @Body() dto: CreateMenuGroupDto,
@@ -25,12 +39,6 @@ export class MenuGroupsCMSController {
     ): Promise<ApiResponse<GetMenuGroupDto>>{
         const result = await this.menugroupService.createMenuGroup(dto, username);
         return ApiResponse.success<GetMenuGroupDto>(result);
-    }
-
-    @Get()
-    async getMenuGroup(@Query() query: MenuGroupParam): Promise<ApiResponse<GetMenuGroupDto[]>>{
-        const res = await this.menugroupService.getMenuGroup(query);
-        return ApiResponse.success<GetMenuGroupDto[]>(res)
     }
     
     @Put(':id')

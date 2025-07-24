@@ -1,10 +1,9 @@
 import { 
     Entity, 
     PrimaryGeneratedColumn, 
-    Column,
-    UpdateDateColumn } from "typeorm";
+    Column } from "typeorm";
 
-@Entity('user_login')
+@Entity('user')
 export class userLogin{
     @PrimaryGeneratedColumn('uuid')
     id: string;
@@ -15,10 +14,13 @@ export class userLogin{
     @Column()
     password: string;
 
-    @Column({name:'user_agent'})
+    @Column({nullable: true, name:'user_agent'})
     userAgent: string;
 
-    @UpdateDateColumn({name:'login_at'})
+    @Column({nullable: true, name:'create_at'})
+    createAt: Date;
+
+    @Column({nullable: true, name:'login_at'})
     loginAt: Date;
     
 }
