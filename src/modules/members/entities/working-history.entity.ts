@@ -12,13 +12,13 @@ export class WorkingHistory extends BaseEntity{
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column()
+    @Column({type: 'nvarchar'})
     title: string;
 
-    @Column()
+    @Column({type: 'nvarchar'})
     description: string;
 
-    @Column({ nullable: true })
+    @Column({ nullable: true, type: 'nvarchar' })
     categories: string;
 
     @Column({name:'member_id'})

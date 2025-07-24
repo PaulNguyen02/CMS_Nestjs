@@ -5,7 +5,8 @@ import {
   BadRequestException,
   HttpException,
   NotFoundException,
-  UnauthorizedException
+  UnauthorizedException,
+  InternalServerErrorException
 } from '@nestjs/common';
 import { Response } from 'express';
 import { QueryFailedError } from 'typeorm';
@@ -81,7 +82,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         .status(500)
         .json(ApiResponse.error({
           code: 500,
-          message: 'Lỗi cơ sở dữ liệu.',
+          message: (exception as any)?.stack,
         }));
     }
 
@@ -91,6 +92,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     if (exception instanceof NotFoundException) {
       return res.status(404).json(ApiResponse.notFound());
+    }
+
+    if( exception instanceof InternalServerErrorException) {
+      return res.status(500).json(ApiResponse.internalError());
     }
 
     return res.status(500).json(ApiResponse.error({

@@ -8,34 +8,34 @@ import {
     Query
  } from '@nestjs/common';
 import { FollowUsService } from '../follow-us.service';
-import { GetFollowusDto } from '../dto/get-followus.dto';
-import { CreateFollowusDto } from '../dto/create-followus.dto';
+import { GetFollowUsDto } from '../dto/response/get-follow-us.dto';
+import { CreateFollowUsDto } from '../dto/request/create-follow-us.dto';
 import { ApiResponse } from '@/common/response/api-response';
 import { GetUser } from '@/common/decorators/get-user.decorator';
-import { FolowUsParam } from '../dto/followus-param.dto';
+import { FollowUsParam } from '../dto/request/follow-us-param.dto';
 
 @Controller('follow-us')
 export class FollowUsCMSController {
     constructor(private readonly followService: FollowUsService) {}
     
-    @Post()
-    async createFollowUs(
-        @Body() dto: CreateFollowusDto,
-        @GetUser('username') username: string
-    ): Promise<ApiResponse<GetFollowusDto>>{
-        const result = await this.followService.createFollowUs(dto, username);
-        return ApiResponse.success<GetFollowusDto>(result);
+    @Get()
+    async getFollowUs(@Query() query: FollowUsParam): Promise<ApiResponse<GetFollowUsDto[]>>{
+        const res = await this.followService.getFollowUs(query);
+        return ApiResponse.success<GetFollowUsDto[]>(res)
     }
 
-    @Get()
-    async getFollowUs(@Query() query: FolowUsParam): Promise<ApiResponse<GetFollowusDto[]>>{
-        const res = await this.followService.getFollowUs(query);
-        return ApiResponse.success<GetFollowusDto[]>(res)
+    @Post()
+    async createFollowUs(
+        @Body() dto: CreateFollowUsDto,
+        @GetUser('username') username: string
+    ): Promise<ApiResponse<GetFollowUsDto>>{
+        const result = await this.followService.createFollowUs(dto, username);
+        return ApiResponse.success<GetFollowUsDto>(result);
     }
 
     @Delete(':id')
-    async deleteFollowUs(@Param('id') id: string): Promise<ApiResponse<GetFollowusDto>>{
+    async deleteFollowUs(@Param('id') id: string): Promise<ApiResponse<GetFollowUsDto>>{
         const res = await this.followService.deleteFollowUs(id);
-        return ApiResponse.success<GetFollowusDto>(res)
+        return ApiResponse.success<GetFollowUsDto>(res)
     }
 }

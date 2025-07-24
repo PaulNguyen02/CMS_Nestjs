@@ -11,7 +11,7 @@ export class Partners extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column()
+    @Column({type: 'nvarchar'})
     name: string;
 
     @Column()

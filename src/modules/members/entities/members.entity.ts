@@ -12,7 +12,7 @@ export class Member extends BaseEntity{
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column({name:'fullname'})
+    @Column({name:'full_name', type: 'nvarchar'})
     fullName: string;
 
     @Column({ unique: true })

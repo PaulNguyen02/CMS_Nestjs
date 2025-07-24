@@ -10,10 +10,8 @@ import { PartnersModule } from '@modules/partners/partners.module';
 import { PostsModule } from '@modules/posts/posts.module';
 import { UserLoginModule } from '@/modules/auth/user-login.module';
 import { DatabaseModule } from '@database/database.module';
-import { Cache } from '@/common/cache/cache/cache.module';
 import { ThrottleModule } from '../utils/throttler.module';
 export const appModules = [
-    Cache,
     DatabaseModule,
     PostsModule,
     FilesModule,

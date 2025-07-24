@@ -1,12 +1,13 @@
 import { config } from 'dotenv';
 import * as fs from 'fs/promises';
-import { Repository } from 'typeorm';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Repository, Like } from 'typeorm';
+import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Files } from './entities/files.entity';
-import { GetFileDto } from './dto/get-file.dto';
-import { CreateFileDto } from './dto/create-file.dto';
+import { GetFileDto } from './dto/response/get-file.dto';
+import { CreateFileDto } from './dto/request/create-file.dto';
+import { FileException } from './enums/file-exception';
 config();
 @Injectable()
 export class FilesService{
@@ -14,6 +15,24 @@ export class FilesService{
     @InjectRepository(Files)
         private readonly imageRepo: Repository<Files>
     ) {}
+
+
+    async searchFile(query: string): Promise<GetFileDto[]> {
+        const qb = this.imageRepo.createQueryBuilder('file');
+
+        if (query && query.trim() !== '') {
+            const searchTerm = `%${query.trim()}%`;
+
+            qb.where('file.id LIKE :search', { search: searchTerm })
+            .orWhere('file.originalName LIKE :search', { search: searchTerm });
+        }
+
+        const data = await qb.getMany();
+
+        return plainToInstance(GetFileDto, data, {
+            excludeExtraneousValues: true,
+        });
+    }
 
     async uploadFile(file: CreateFileDto, username: string): Promise<GetFileDto>{
         let image;
@@ -50,17 +69,20 @@ export class FilesService{
         // Tìm file trong CSDL
         const file = await this.imageRepo.findOne({ where: { id: fileId } });
         if (!file) {
-            throw new NotFoundException(`File with ID ${fileId} not found`);
+            throw new NotFoundException(FileException.FILE_NOT_FOUND);
         }
         if(process.env.WEB_HOST){
             // Lấy đường dẫn file từ URL
             const filePath = file.url.replace(process.env.WEB_HOST, '.');
             try {
-                // Xóa file vật lý
                 await fs.unlink(filePath);
-            } catch (error) {
-                // Nếu file không tồn tại trong thư mục, vẫn tiếp tục xóa bản ghi trong CSDL
-                console.warn(`File not found on disk: ${filePath}`);
+            } catch (error: any) {
+                if (error.code === 'ENOENT') {
+                    throw new NotFoundException(FileException.FILE_NOT_FOUND);
+                } 
+                else {
+                    throw new InternalServerErrorException(FileException.DELETE_FILE_ERROR);
+                }
             }
             // Xóa bản ghi trong CSDL
             await this.imageRepo.delete(fileId);

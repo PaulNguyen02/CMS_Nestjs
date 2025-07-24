@@ -8,7 +8,7 @@ export class Messages extends BaseEntity{
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column({name:'fullname'})
+    @Column({name:'full_name', type: 'nvarchar'})
     fullName: string;
 
     @Column({name:'phone_number'})

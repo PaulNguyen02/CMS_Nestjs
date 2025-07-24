@@ -11,7 +11,7 @@ export class menuItem extends BaseEntity{
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column()
+    @Column({type: 'nvarchar'})
     name: string;
 
     @Column({ unique: true })

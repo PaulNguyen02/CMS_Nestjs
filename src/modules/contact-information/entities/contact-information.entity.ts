@@ -8,10 +8,10 @@ export class contactInformation extends BaseEntity{
     @PrimaryGeneratedColumn('uuid')
     id: string;
     
-    @Column()
+    @Column({type: 'nvarchar'})
     key: string;
 
-    @Column()
+    @Column({type: 'nvarchar'})
     value: string;
 
 }

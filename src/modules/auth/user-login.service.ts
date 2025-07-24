@@ -4,9 +4,10 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { JwtService } from '@nestjs/jwt';
+import { AuthException } from './enums/auth-exceptions';
 import { userLogin } from './entities/user-login.entity';
-import { GetUserLoginDto } from './dto/get-userlogin.dto';
-import { CreateUserLoginDto } from './dto/create-userlogin.dto';
+import { GetUserLoginDto } from './dto/response/get-userlogin.dto';
+import { CreateUserLoginDto } from './dto/request/create-userlogin.dto';
 @Injectable()
 export class UserLoginService{
     constructor(
@@ -15,7 +16,28 @@ export class UserLoginService{
         private readonly jwtService: JwtService
     ) {}
 
-    async Login(dto: CreateUserLoginDto, userAgent: string): Promise<string> {
+    async getLoginHistory(): Promise<GetUserLoginDto[]>{
+        const res = await this.userRepository.find();
+        return plainToInstance(GetUserLoginDto, res, {
+            excludeExtraneousValues: true,
+        });
+    }
+
+    async register(dto: CreateUserLoginDto): Promise<string> {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(dto.password, salt);
+
+        const newUser = this.userRepository.create({
+            username: dto.username,
+            password: hashedPassword,
+            createAt: new Date(),
+        });
+
+        const savedUser = await this.userRepository.save(newUser);
+        return savedUser.username;
+    }
+
+    async login(dto: CreateUserLoginDto, userAgent: string): Promise<string> {
         const { username, password} = dto;
 
         let user = await this.userRepository.findOne({
@@ -23,20 +45,11 @@ export class UserLoginService{
         });
 
         if(!user){
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash(dto.password, salt);
-    
-            const login = this.userRepository.create({
-                username: dto.username,
-                password: hashedPassword,
-                userAgent: userAgent,
-                loginAt: new Date() 
-            });
-            user = await this.userRepository.save(login);
+            throw new UnauthorizedException(AuthException.USER_NOT_FOUND);
         }else{
             const isMatch = await bcrypt.compare(password, user.password);
             if (!isMatch) {
-                throw new UnauthorizedException('Sai mật khẩu');
+                throw new UnauthorizedException(AuthException.INVALID_CREDENTIALS);
             }
             await this.userRepository.update(user.id, {
                 userAgent,
@@ -46,12 +59,5 @@ export class UserLoginService{
         const payload = { sub: user.id, username: user.username };
         const token = this.jwtService.sign(payload);
         return token
-    }
-
-    async getLoginHistory(): Promise<GetUserLoginDto[]>{
-        const res = await this.userRepository.find();
-        return plainToInstance(GetUserLoginDto, res, {
-            excludeExtraneousValues: true,
-        });
     }
 }

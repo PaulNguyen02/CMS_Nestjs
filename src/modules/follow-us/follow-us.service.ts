@@ -1,27 +1,40 @@
 import {
-    Inject, 
     Injectable, 
     NotFoundException } from '@nestjs/common';
-import { 
-    Cache, 
-    CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { followUs } from './entities/follow-us.entity';
-import { GetFollowusDto } from './dto/get-followus.dto';
-import { CreateFollowusDto } from './dto/create-followus.dto';
-import { FolowUsParam } from './dto/followus-param.dto';
+import { GetFollowUsDto } from './dto/response/get-follow-us.dto';
+import { CreateFollowUsDto } from './dto/request/create-follow-us.dto';
+import { FollowUsParam } from './dto/request/follow-us-param.dto';
+import { FollowUsExceptions } from './enums/follow-us-exceptions';
 @Injectable()
 export class FollowUsService{
     constructor(
         @InjectRepository(followUs)
-        private readonly followRepository: Repository<followUs>,
-        @Inject(CACHE_MANAGER) 
-        private cacheManager: Cache
+        private readonly followRepository: Repository<followUs>
     ) {}
 
-    async createFollowUs(dto: CreateFollowusDto, username: string): Promise<GetFollowusDto>{
+    async getFollowUs(query: FollowUsParam): Promise<GetFollowUsDto[]>{
+        const {search} = query;
+        const qb = this.followRepository
+            .createQueryBuilder('follow')
+            .leftJoinAndSelect('follow.file', 'file')
+        if (search) {
+            qb.andWhere(
+                `follow.name LIKE N'%' + :search + '%'`,
+                { search },
+            );
+        }
+        const followUs = await qb.getMany();
+        const res = plainToInstance(GetFollowUsDto, followUs, {
+            excludeExtraneousValues: true,
+        });
+        return res;
+    }
+
+    async createFollowUs(dto: CreateFollowUsDto, username: string): Promise<GetFollowUsDto>{
         const newFollow = await this.followRepository.create({
             name: dto.name,
             url: dto.url,
@@ -30,43 +43,19 @@ export class FollowUsService{
             createdBy: username 
         });
         const saved = await this.followRepository.save(newFollow);
-        const res = plainToInstance(GetFollowusDto, saved, {
+        const res = plainToInstance(GetFollowUsDto, saved, {
             excludeExtraneousValues: true,
         });
         return res;
     }
 
-    async getFollowUs(query: FolowUsParam): Promise<GetFollowusDto[]>{
-        const {search} = query;
-        const cacheKey = `follow${search ? `:${search}` : ''}`;
-        const cached = await this.cacheManager.get<GetFollowusDto[]>(cacheKey);
-        if (cached) {
-            return cached;
-        }
-        const qb = this.followRepository
-            .createQueryBuilder('follow')
-            .leftJoinAndSelect('follow.file', 'file')
-        if (search) {
-            qb.andWhere(
-                'follow.name LIKE :search',
-                { search: `%${search}%` },
-            );
-        }
-        const followUs = await qb.getMany();
-        const res = plainToInstance(GetFollowusDto, followUs, {
-            excludeExtraneousValues: true,
-        });
-        await this.cacheManager.set(cacheKey, res, 60);
-        return res;
-    }
-
-    async deleteFollowUs(follow_us_id: string): Promise<GetFollowusDto>{
+    async deleteFollowUs(follow_us_id: string): Promise<GetFollowUsDto>{
         const followUs = await this.followRepository.findOne({ where: { id: follow_us_id } });
         if (!followUs) {
-            throw new NotFoundException(`User with ID ${follow_us_id} not found`);
+            throw new NotFoundException(FollowUsExceptions.FOLLOW_US_NOT_FOUND);
         }
         const delete_follow_us = await this.followRepository.remove(followUs); // hoặc .softRemove nếu có soft-delete
-        const res = plainToInstance(GetFollowusDto, delete_follow_us,{
+        const res = plainToInstance(GetFollowUsDto, delete_follow_us,{
             excludeExtraneousValues: true,
         })
         return res;

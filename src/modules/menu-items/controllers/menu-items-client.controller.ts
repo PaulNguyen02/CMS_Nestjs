@@ -4,10 +4,10 @@ import {
     Query
 } from '@nestjs/common';
 import { MenuItemsService } from '../menu-items.service';
-import { GetMenuItemDto } from '../dto/get-menuitem.dto';
+import { GetMenuItemDto } from '../dto/response/get-menuitem.dto';
 import { ApiResponse } from '@/common/response/api-response';
 import { Public } from '@/common/decorators/public.decorator';
-import { MenuItemParam } from '../dto/menu-item-param.dto';
+import { MenuItemParam } from '../dto/request/menu-item-param.dto';
 
 @Controller('menu-items')
 export class MenuItemsClientController {

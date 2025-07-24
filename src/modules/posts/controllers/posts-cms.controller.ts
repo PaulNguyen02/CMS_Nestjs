@@ -9,25 +9,17 @@ import {
     Body
  } from '@nestjs/common';
 import { PostsService } from '../posts.service';
-import { GetPostDto } from '../dto/get-post.dto';
-import { CreatePostDto } from '../dto/create-post.dto';
-import { UpdatePostDto } from '../dto/update-post.dto';
+import { GetPostDto } from '../dto/response/get-post.dto';
+import { CreatePostDto } from '../dto/request/create-post.dto';
+import { UpdatePostDto } from '../dto/request/update-post.dto';
 import { ApiResponse } from '@/common/response/api-response';
 import { PaginationDto } from '@/common/dto/pagination.dto';
-import { PostParam } from '../dto/post-param.dto';
+import { PostParam } from '../dto/request/post-param.dto';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 
 @Controller('posts')
 export class PostsCMSController {
     constructor (private readonly postService: PostsService){}
-    @Post()
-    async createPost(
-        @Body() dto: CreatePostDto,
-        @GetUser('username') username: string
-    ): Promise<ApiResponse<GetPostDto>>{
-        const result = await this.postService.createPost(dto, username);
-        return ApiResponse.success<GetPostDto>(result);
-    }
 
     @Get()
     async getPaginatePost(@Query() query: PostParam): Promise<ApiResponse<PaginationDto<GetPostDto>>>{
@@ -35,10 +27,19 @@ export class PostsCMSController {
         return ApiResponse.success<PaginationDto<GetPostDto>>(res)
     }
 
-    @Get(':slug')
-    async getDetailPost(@Param('slug') slug: string): Promise<ApiResponse<GetPostDto>>{
-        const res = await this.postService.getDetailPost(slug);
+    @Get(':id')
+    async getDetailPost(@Param('id') id: string): Promise<ApiResponse<GetPostDto>>{
+        const res = await this.postService.getDetailPost(id);
         return ApiResponse.success<GetPostDto>(res)
+    }
+
+    @Post()
+    async createPost(
+        @Body() dto: CreatePostDto,
+        @GetUser('username') username: string
+    ): Promise<ApiResponse<GetPostDto>>{
+        const result = await this.postService.createPost(dto, username);
+        return ApiResponse.success<GetPostDto>(result);
     }
 
     @Put(':id')

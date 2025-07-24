@@ -10,14 +10,15 @@ import { HttpExceptionFilter } from './common/response/http-exception-filter';
 import { JwtAuthGuard } from './common/guard/jwt-auth.guard'; 
 async function bootstrap() {
 
-  const httpsOptions = {
+  /*const httpsOptions = {
     key: fs.readFileSync('./cert/key.pem'),
     cert: fs.readFileSync('./cert/cert.pem'),
-  };
+  };*/
 
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-      httpsOptions,
-  });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule,{
+      //httpsOptions,
+    }
+  );
 
   const reflector = app.get(Reflector);
   app.useGlobalGuards(new JwtAuthGuard(reflector)); // Set global guard

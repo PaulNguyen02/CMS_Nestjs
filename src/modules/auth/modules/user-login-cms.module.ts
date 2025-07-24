@@ -6,7 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from 'src/common/guard/jwt.strategy';
 import { UserLoginService } from '../user-login.service';
 import { userLogin } from '../entities/user-login.entity';
-import { LoginCMSController } from '../controllers/user-login-cms.controller';
+import { AuthController } from '../controllers/user-login-cms.controller';
 
 @Module({
   imports: [
@@ -22,7 +22,7 @@ import { LoginCMSController } from '../controllers/user-login-cms.controller';
     }),
     TypeOrmModule.forFeature([userLogin])
   ],
-  controllers: [LoginCMSController],
+  controllers: [AuthController],
   providers: [UserLoginService, JwtStrategy],
   exports: [UserLoginService], 
 })
