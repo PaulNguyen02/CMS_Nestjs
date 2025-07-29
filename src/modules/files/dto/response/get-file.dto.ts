@@ -13,8 +13,4 @@ export class GetFileDto extends GetBaseDto{
 
     @Expose({ name: 'member_id' })
     memberId: string; 
-    
-    @Expose()
-    @Type(() => GetMemberDto) // <-- ánh xạ nested object
-    member: GetMemberDto;
 }
