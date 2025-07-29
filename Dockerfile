@@ -1,13 +1,19 @@
-FROM node:22-alpine
+FROM node:22-alpine AS build
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm ci --only=production && npm cache clean --force
 
-COPY . .
+COPY dist ./dist
 
-RUN npm run build
+RUN addgroup -g 1001 -S company && \
+    adduser -S vtcode -u 1001
 
-CMD ["node", "dist/main"]
+RUN chown -R vtcode:company /app
+USER vtcode
+
+EXPOSE 3000 
+
+CMD ["node", "dist/main.js"]
