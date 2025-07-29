@@ -1,6 +1,6 @@
 import { config } from 'dotenv';
 import * as fs from 'fs/promises';
-import { Repository, Like } from 'typeorm';
+import { Repository} from 'typeorm';
 import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
@@ -8,6 +8,8 @@ import { Files } from './entities/files.entity';
 import { GetFileDto } from './dto/response/get-file.dto';
 import { CreateFileDto } from './dto/request/create-file.dto';
 import { FileException } from './enums/file-exception';
+import { PaginationDto } from '@/common/dto/pagination.dto';
+import { FileParam } from './dto/request/file-param.dto';
 config();
 @Injectable()
 export class FilesService{
@@ -16,6 +18,29 @@ export class FilesService{
         private readonly imageRepo: Repository<Files>
     ) {}
 
+    async getPaginateFiles(query: FileParam): Promise<PaginationDto<GetFileDto>>{
+        const { page = 1, limit = 10, search } = query;
+        const qb = this.imageRepo.createQueryBuilder('image');
+        
+        if (search) {
+            qb.andWhere(
+                `image.originalName LIKE N'%' + :search + '%'`,
+                { search },
+            );
+        }
+        qb.orderBy('image.created_at', 'DESC').skip((page - 1) * limit).take(limit);
+        const [items, total] = await qb.getManyAndCount();
+        const data = plainToInstance(GetFileDto, items, {
+            excludeExtraneousValues: true,
+        });
+        const res = new PaginationDto<GetFileDto>({
+            data,
+            total,
+            page,
+            lastPage: Math.ceil(total / limit),
+        });
+        return res;    
+    }
 
     async searchFile(query: string): Promise<GetFileDto[]> {
         const qb = this.imageRepo.createQueryBuilder('file');

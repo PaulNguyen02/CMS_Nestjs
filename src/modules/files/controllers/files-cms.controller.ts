@@ -14,15 +14,23 @@ import { FilesService } from '../files.service';
 import { ApiConsumes, ApiBody} from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { GetFileDto } from '../dto/response/get-file.dto';
+import { FileParam } from '../dto/request/file-param.dto';
 import { CreateFileDto } from '../dto/request/create-file.dto';
 import { uploadOption } from '@/common/const/upload-options.const';
 import { ApiResponse } from '@/common/response/api-response';
 import { uploadBody } from '@/common/const/upload-body.const';
 import { GetUser } from '@/common/decorators/get-user.decorator';
-
+import { PaginationDto } from '@/common/dto/pagination.dto';
 @Controller('files')
 export class FilesCMSController {
     constructor(private readonly fileService: FilesService) {}
+
+    @Get()
+    async getPaginateFiles(@Query() query: FileParam): Promise<ApiResponse<PaginationDto<GetFileDto>>>
+    {
+        const res = await this.fileService.getPaginateFiles(query);
+        return ApiResponse.success<PaginationDto<GetFileDto>>(res)
+    }
 
     @Get('search')
     async searchFile(@Query('query') search: string): Promise<ApiResponse<GetFileDto[]>>
