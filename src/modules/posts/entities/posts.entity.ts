@@ -27,14 +27,15 @@ export class Posts extends BaseEntity{
     @Column({nullable: true, type: 'nvarchar'})
     content: string;
 
-    @Column({nullable: true})
-    banner?: string;
+    @Column({ name: 'banner_id', nullable: true })
+    bannerId?: string;
+
+    @ManyToOne(() => Files, { nullable: true, eager: false })
+    @JoinColumn({ name: 'banner_id' }) // Khớp với tên cột banner_id
+    bannerFile?: Files;
 
     @Column({name:'category_id'})
     categoryId: string;
-
-    @OneToMany(() => Files, file => file.posts, {nullable: true})
-    banners?: Files[];
         
     @ManyToOne(() => Categories, (categories) => categories.posts, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'category_id' }) 

@@ -1,7 +1,16 @@
-import { Expose, Type } from "class-transformer";
-import { GetMemberDto } from "@/modules/members/dto/member-response/get-member.dto";
+import { Expose, Transform} from "class-transformer";
+import { ConfigService } from '@nestjs/config';
 import { GetBaseDto } from "@/common/dto/get-base.dto";
-export class GetFileDto extends GetBaseDto{
+const WEB_HOST = process.env.WEB_HOST || 'http://localhost:3000'
+export class GetFileDto{
+    @Expose({ name: 'id' })
+    id: string;
+    
+    @Expose({ name: 'url' })
+    @Transform(({ value }) => WEB_HOST + value)
+    url: string;
+}
+export class DetailFile extends GetBaseDto{
     @Expose({ name: 'id' })
     id: string;
 

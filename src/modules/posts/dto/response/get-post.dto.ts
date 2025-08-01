@@ -18,9 +18,9 @@ export class GetPostDto extends GetBaseDto{
     @Expose({ name: 'content' })
     content: string;
 
-    @Expose({ name: 'banners' })
-    @Type(() => GetFileDto) 
-    banner: GetFileDto;
+    @Expose()
+    @Type(() => GetFileDto)
+    bannerFile: GetFileDto;
 
     @Expose({name: 'relatedPosts'})
     @Type(() => GetRelatedPostDto)

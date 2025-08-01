@@ -1,0 +1,144 @@
+-- Tạo database
+CREATE DATABASE VTCPDB1;
+GO
+USE VTCPDB;
+GO
+
+-- Bảng files
+CREATE TABLE files (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWSEQUENTIALID(),
+    created_at DATETIME NOT NULL,
+    created_by NVARCHAR(255) NOT NULL,
+    original_name NVARCHAR(255) NOT NULL,
+    url NVARCHAR(255) NOT NULL
+);
+
+-- Bảng categories
+CREATE TABLE categories (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWSEQUENTIALID(),
+    created_at DATETIME NOT NULL,
+    created_by NVARCHAR(255) NOT NULL,
+    name NVARCHAR(255) NOT NULL,
+    slug NVARCHAR(255) NOT NULL UNIQUE
+);
+
+-- Bảng contact_information
+CREATE TABLE contact_information (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWSEQUENTIALID(),
+    created_at DATETIME NOT NULL,
+    created_by NVARCHAR(255) NOT NULL,
+    [key] NVARCHAR(255) NOT NULL,
+    value NVARCHAR(255) NOT NULL
+);
+
+-- Bảng follow_us
+CREATE TABLE follow_us (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWSEQUENTIALID(),
+    created_at DATETIME NOT NULL,
+    created_by NVARCHAR(255) NOT NULL,
+    name NVARCHAR(255) NOT NULL,
+    url NVARCHAR(255) NOT NULL,
+    file_id UNIQUEIDENTIFIER NOT NULL UNIQUE,
+    CONSTRAINT FK_follow_us_file FOREIGN KEY (file_id) REFERENCES files(id) ON DELETE CASCADE
+);
+
+-- Bảng members
+CREATE TABLE members (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWSEQUENTIALID(),
+    created_at DATETIME NOT NULL,
+    created_by NVARCHAR(255) NOT NULL,
+    full_name NVARCHAR(255) NOT NULL,
+    slug NVARCHAR(255) NOT NULL UNIQUE,
+    position NVARCHAR(255) NOT NULL,
+    image_id UNIQUEIDENTIFIER NULL,
+    CONSTRAINT FK_members_file FOREIGN KEY (image_id) REFERENCES files(id)
+);
+
+-- Bảng menu_group
+CREATE TABLE menu_group (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWSEQUENTIALID(),
+    created_at DATETIME NOT NULL,
+    created_by NVARCHAR(255) NOT NULL,
+    name NVARCHAR(255) NOT NULL,
+    slug NVARCHAR(255) NOT NULL UNIQUE,
+    is_footer BIT NOT NULL
+);
+
+-- Bảng menu_item
+CREATE TABLE menu_item (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWSEQUENTIALID(),
+    created_at DATETIME NOT NULL,
+    created_by NVARCHAR(255) NOT NULL,
+    name NVARCHAR(255) NOT NULL,
+    slug NVARCHAR(255) NOT NULL UNIQUE,
+    group_id UNIQUEIDENTIFIER NOT NULL,
+    CONSTRAINT FK_menu_item_group FOREIGN KEY (group_id) REFERENCES menu_group(id) ON DELETE CASCADE
+);
+
+-- Bảng messages
+CREATE TABLE messages (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWSEQUENTIALID(),
+    created_at DATETIME NOT NULL,
+    created_by NVARCHAR(255) NOT NULL,
+    full_name NVARCHAR(255) NOT NULL,
+    phone_number NVARCHAR(255) NOT NULL,
+    email NVARCHAR(255) NOT NULL,
+    content NVARCHAR(255) NOT NULL
+);
+
+-- Bảng partners
+CREATE TABLE partners (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWSEQUENTIALID(),
+    created_at DATETIME NOT NULL,
+    created_by NVARCHAR(255) NOT NULL,
+    name NVARCHAR(255) NOT NULL,
+    url NVARCHAR(255) NOT NULL,
+    file_id UNIQUEIDENTIFIER NOT NULL UNIQUE,
+    CONSTRAINT FK_partners_file FOREIGN KEY (file_id) REFERENCES files(id) ON DELETE CASCADE
+);
+
+-- Bảng posts
+CREATE TABLE posts (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWSEQUENTIALID(),
+    created_at DATETIME NOT NULL,
+    created_by NVARCHAR(255) NOT NULL,
+    slug NVARCHAR(255) NOT NULL UNIQUE,
+    title NVARCHAR(255) NOT NULL,
+    summary NVARCHAR(255),
+    content NVARCHAR(255),
+    banner_id UNIQUEIDENTIFIER,
+    category_id UNIQUEIDENTIFIER NOT NULL,
+    CONSTRAINT FK_posts_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
+    CONSTRAINT FK_posts_banner FOREIGN KEY (banner_id) REFERENCES files(id)
+);
+
+-- Bảng post_related_posts (bảng nối N-N)
+CREATE TABLE post_related_posts (
+    post_id UNIQUEIDENTIFIER NOT NULL,
+    related_post_id UNIQUEIDENTIFIER NOT NULL,
+    PRIMARY KEY (post_id, related_post_id),
+    CONSTRAINT FK_post_related_post FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_related_post FOREIGN KEY (related_post_id) REFERENCES posts(id)
+);
+
+-- Bảng user
+CREATE TABLE [user] (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWSEQUENTIALID(),
+    username NVARCHAR(255) NOT NULL,
+    [password] NVARCHAR(255) NOT NULL,
+    user_agent NVARCHAR(255),
+    create_at DATETIME,
+    login_at DATETIME
+);
+
+-- Bảng working_history
+CREATE TABLE working_history (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWSEQUENTIALID(),
+    created_at DATETIME NOT NULL,
+    created_by NVARCHAR(255) NOT NULL,
+    title NVARCHAR(255) NOT NULL,
+    description NVARCHAR(255) NOT NULL,
+    categories NVARCHAR(255),
+    member_id UNIQUEIDENTIFIER NOT NULL,
+    CONSTRAINT FK_working_history_member FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE
+);

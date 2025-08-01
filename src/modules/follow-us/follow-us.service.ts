@@ -35,18 +35,22 @@ export class FollowUsService{
     }
 
     async createFollowUs(dto: CreateFollowUsDto, username: string): Promise<GetFollowUsDto>{
-        const newFollow = await this.followRepository.create({
-            name: dto.name,
-            url: dto.url,
-            fileId: dto.fileId,
-            createdAt: new Date(),
-            createdBy: username 
-        });
-        const saved = await this.followRepository.save(newFollow);
-        const res = plainToInstance(GetFollowUsDto, saved, {
-            excludeExtraneousValues: true,
-        });
-        return res;
+        try{
+            const newFollow = await this.followRepository.create({
+                name: dto.name,
+                url: dto.url,
+                fileId: dto.fileId,
+                createdAt: new Date(),
+                createdBy: username 
+            });
+            const saved = await this.followRepository.save(newFollow);
+            const res = plainToInstance(GetFollowUsDto, saved, {
+                excludeExtraneousValues: true,
+            });
+            return res;
+        }catch{
+            throw new NotFoundException(FollowUsExceptions.DUPLICATE_IMG);
+        }
     }
 
     async deleteFollowUs(follow_us_id: string): Promise<GetFollowUsDto>{
