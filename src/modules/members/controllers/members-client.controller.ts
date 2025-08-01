@@ -24,7 +24,7 @@ export class MembersClientController {
     @Public()
     @Get(':slug')
     async getDetailMember(@Param('slug') slug: string) : Promise<ApiResponse<GetMemberDto>>{
-        const res = await this.memberService.getDetailMember(slug);
+        const res = await this.memberService.getDetailMemberbySlug(slug);
         return ApiResponse.success<GetMemberDto>(res)
     }
 

@@ -29,6 +29,7 @@ export class MembersService{
         const { page = 1, limit = 10, search } = query;
 
         const qb = this.memberRepository.createQueryBuilder('member')
+        .leftJoinAndSelect('member.imageFile', 'imageFile')
         if (search) {
             qb.andWhere(`member.fullName LIKE N'%' + :search + '%'`, { search })
             .orWhere(`member.position LIKE N'%' + :search + '%'`, { search });
@@ -48,8 +49,9 @@ export class MembersService{
     }
 
     async searchMember(search: string): Promise<GetMemberDto[]> {
-        const qb = this.memberRepository.createQueryBuilder('member');
-            
+        const qb = this.memberRepository
+            .createQueryBuilder('member')
+            .leftJoinAndSelect('member.imageFile', 'imageFile')   
         if (search && search.trim() !== '') {
             qb.where('member.id LIKE :id', { id: `%${search}%` })
             .orWhere(`member.fullName LIKE N'%' + :search + '%'`, { search });
@@ -67,9 +69,22 @@ export class MembersService{
     async getDetailMember(id: string): Promise<GetMemberDto>{
         const qb = this.memberRepository
             .createQueryBuilder('member')
-            .leftJoinAndSelect('member.files', 'files')
+            .leftJoinAndSelect('member.imageFile', 'imageFile')
             .leftJoinAndSelect('member.workingHistory', 'workingHistory')
             .where('member.id = :id', { id })
+        const item = await qb.getOne()
+        const data = plainToInstance(GetMemberDto, item, {
+            excludeExtraneousValues: true,
+        });
+        return data;        
+    }
+
+    async getDetailMemberbySlug(slug: string): Promise<GetMemberDto>{
+        const qb = this.memberRepository
+            .createQueryBuilder('member')
+            .leftJoinAndSelect('member.imageFile', 'imageFile')
+            .leftJoinAndSelect('member.workingHistory', 'workingHistory')
+            .where('member.slug = :slug', { slug })
         const item = await qb.getOne()
         const data = plainToInstance(GetMemberDto, item, {
             excludeExtraneousValues: true,
@@ -90,6 +105,7 @@ export class MembersService{
             const member = queryRunner.manager.create(Member, {
                 fullName: dto.fullName,
                 position: dto.position,
+                imageId: dto.imageId,
                 slug: slug,
                 createdAt: new Date(),
                 createdBy: username,
@@ -132,6 +148,7 @@ export class MembersService{
             Object.assign(member, {
                 fullName: dto.fullName,
                 position: dto.position,
+                imageId: dto.imageId,
                 slug: dto.fullName ? slugString(dto.fullName) : member.slug,
                 createdAt: new Date(),
                 createdBy: username,

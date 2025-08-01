@@ -13,6 +13,11 @@ export class CreateMemberDto{
     @IsString()
     position: string;
 
+    @ApiProperty({ required: false })
+    @IsOptional()
+    @IsString()
+    imageId?: string;
+
     @ApiProperty({ type: [CreateWorkingHistoryDto] })
     @IsOptional()
     @IsArray()

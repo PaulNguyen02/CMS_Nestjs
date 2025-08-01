@@ -13,7 +13,7 @@ import { Express } from 'express';
 import { FilesService } from '../files.service';
 import { ApiConsumes, ApiBody} from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { GetFileDto } from '../dto/response/get-file.dto';
+import { GetFileDto, DetailFile } from '../dto/response/get-file.dto';
 import { FileParam } from '../dto/request/file-param.dto';
 import { CreateFileDto } from '../dto/request/create-file.dto';
 import { uploadOption } from '@/common/const/upload-options.const';
@@ -26,10 +26,10 @@ export class FilesCMSController {
     constructor(private readonly fileService: FilesService) {}
 
     @Get()
-    async getPaginateFiles(@Query() query: FileParam): Promise<ApiResponse<PaginationDto<GetFileDto>>>
+    async getPaginateFiles(@Query() query: FileParam): Promise<ApiResponse<PaginationDto<DetailFile>>>
     {
         const res = await this.fileService.getPaginateFiles(query);
-        return ApiResponse.success<PaginationDto<GetFileDto>>(res)
+        return ApiResponse.success<PaginationDto<DetailFile>>(res)
     }
 
     @Get('search')

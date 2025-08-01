@@ -25,7 +25,7 @@ export class PostsClientController {
     @Public()
     @Get(':slug')
     async getDetailPost(@Param('slug') slug: string): Promise<ApiResponse<GetPostDto>>{
-        const res = await this.postService.getDetailPost(slug)
+        const res = await this.postService.getDetailPostBySlug(slug)
         return ApiResponse.success<GetPostDto>(res)
     }
 

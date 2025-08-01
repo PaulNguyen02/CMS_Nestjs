@@ -15,9 +15,9 @@ export class GetMemberDto extends GetBaseDto{
     @Expose({ name: 'position' })
     position: string;
 
-    @Expose({ name: 'files' })
-    @Type(() => GetFileDto )
-    files: GetFileDto[];
+    @Expose()
+    @Type(() => GetFileDto)
+    imageFile: GetFileDto;
 
     @Expose({ name: 'workingHistory' })
     @Type(() => GetWorkingHistoryDto )

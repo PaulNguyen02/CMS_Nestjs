@@ -1,8 +1,10 @@
 import { 
     Entity, 
     PrimaryGeneratedColumn, 
-    Column,  
-    OneToMany } from "typeorm";
+    Column, 
+    JoinColumn, 
+    OneToMany,
+    ManyToOne } from "typeorm";
 import { BaseEntity } from "../../../common/entities/base.entity";
 import { Files } from "../../files/entities/files.entity";
 import { WorkingHistory } from "./working-history.entity";
@@ -21,12 +23,12 @@ export class Member extends BaseEntity{
     @Column()
     position: string;
 
-    @OneToMany(
-        () => Files, 
-        (file) => file.member, 
-        { cascade: true }
-    )
-    files: Files[];
+    @Column({ name: 'image_id', nullable: true })
+    imageId?: string;
+
+    @ManyToOne(() => Files, { nullable: true })
+    @JoinColumn({ name: 'image_id' })
+    imageFile?: Files;
 
     @OneToMany(
         () => WorkingHistory, 

@@ -2,7 +2,7 @@ import {
     Injectable, 
     NotFoundException 
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Partners } from './entities/partners.entity';
@@ -20,29 +20,34 @@ export class PartnersService{
         private readonly partnerRepository: Repository<Partners>
     ) {}
 
-    async getPaginatePartner(query: PartnerParam): Promise<PaginationDto<GetPartnerDto>>{
+   async getPaginatePartner(query: PartnerParam): Promise<PaginationDto<GetPartnerDto>> {
         const { page = 1, limit = 10, search } = query;
-        const qb = this.partnerRepository.createQueryBuilder('partner');
-
+        let whereCondition: any = {};
         if (search) {
-            qb.andWhere(
-                `partner.name LIKE N'%' + :search + '%'`,
-                { search },
-            );
+            whereCondition.name = Like(`%${search}%`);
         }
-        qb.orderBy('partner.created_at', 'DESC').skip((page-1)* limit).take(limit);
-        const [items, total] = await qb.getManyAndCount();
+        const [items, total] = await this.partnerRepository.findAndCount({
+            where: whereCondition,
+            relations: ['file'], 
+            order: { 
+                createdAt: 'DESC' 
+            },
+            skip: (page - 1) * limit,
+            take: limit,
+        });
         
         const data = plainToInstance(GetPartnerDto, items, {
             excludeExtraneousValues: true,
         });
+        
         const res = new PaginationDto<GetPartnerDto>({
             data,
             total,
             page,
             lastPage: Math.ceil(total / limit),
         });
-        return res;                 
+        
+        return res;
     }
 
     async createPartner(dto: CreatePartnerDto, username: string): Promise<GetPartnerDto>{

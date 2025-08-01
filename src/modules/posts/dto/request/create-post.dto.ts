@@ -15,10 +15,10 @@ export class CreatePostDto {
     @IsString()    
     content: string;
 
-    @ApiProperty({required: false})
-    @IsOptional() 
+    @ApiProperty({ required: false })
+    @IsOptional()
     @IsString()
-    banner: string; 
+    bannerId?: string;
 
     @ApiProperty()
     @IsString()

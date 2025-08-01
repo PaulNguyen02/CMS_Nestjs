@@ -5,7 +5,7 @@ import { Injectable, NotFoundException, InternalServerErrorException } from '@ne
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Files } from './entities/files.entity';
-import { GetFileDto } from './dto/response/get-file.dto';
+import { GetFileDto, DetailFile } from './dto/response/get-file.dto';
 import { CreateFileDto } from './dto/request/create-file.dto';
 import { FileException } from './enums/file-exception';
 import { PaginationDto } from '@/common/dto/pagination.dto';
@@ -18,7 +18,7 @@ export class FilesService{
         private readonly imageRepo: Repository<Files>
     ) {}
 
-    async getPaginateFiles(query: FileParam): Promise<PaginationDto<GetFileDto>>{
+    async getPaginateFiles(query: FileParam): Promise<PaginationDto<DetailFile>>{
         const { page = 1, limit = 10, search } = query;
         const qb = this.imageRepo.createQueryBuilder('image');
         
@@ -30,10 +30,10 @@ export class FilesService{
         }
         qb.orderBy('image.created_at', 'DESC').skip((page - 1) * limit).take(limit);
         const [items, total] = await qb.getManyAndCount();
-        const data = plainToInstance(GetFileDto, items, {
+        const data = plainToInstance(DetailFile, items, {
             excludeExtraneousValues: true,
         });
-        const res = new PaginationDto<GetFileDto>({
+        const res = new PaginationDto<DetailFile>({
             data,
             total,
             page,
@@ -66,23 +66,13 @@ export class FilesService{
         const month = (now.getMonth() + 1).toString().padStart(2, '0');
         const day = now.getDate().toString().padStart(2, '0');
         const path = `/uploads/${year}/${month}/${day}/${file.originalName}`;
-        const url =  process.env.WEB_HOST + path;
-        if(!file.memberId){
-            image = this.imageRepo.create({ 
-                originalName: file.originalName,
-                url: url,
-                createdAt: new Date(),
-                createdBy: username            
-            });
-        }else{
-            image = this.imageRepo.create({ 
-                originalName: file.originalName,
-                url: url,
-                memberId: file.memberId,
-                createdAt: new Date(),
-                createdBy: username            
-            });
-        }
+        const url = path;
+        image = this.imageRepo.create({ 
+            originalName: file.originalName,
+            url: url,
+            createdAt: new Date(),
+            createdBy: username            
+        });
         const saved = await this.imageRepo.save(image);
         return plainToInstance(GetFileDto, saved, {
             excludeExtraneousValues: true,

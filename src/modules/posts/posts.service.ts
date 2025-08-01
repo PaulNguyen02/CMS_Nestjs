@@ -7,6 +7,7 @@ import { Repository, DataSource} from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Posts } from './entities/posts.entity';
+import { Files } from '../files/entities/files.entity';
 import { GetPostDto } from './dto/response/get-post.dto';
 import { CreatePostDto } from './dto/request/create-post.dto';
 import { UpdatePostDto } from './dto/request/update-post.dto'; 
@@ -24,7 +25,7 @@ export class PostsService{
     async getPaginatePost(query: PostParam): Promise<PaginationDto<GetPostDto>>{
         const { page = 1, limit = 10, search, categoryName } = query;
         const qb = this.postsRepository.createQueryBuilder('post')
-
+        .leftJoinAndSelect('post.bannerFile', 'bannerFile')
         if (search) {
             qb.andWhere(
                 `post.title LIKE N'%' + :search + '%'`,
@@ -56,6 +57,7 @@ export class PostsService{
     async getDetailPost(id: string): Promise<GetPostDto>{
         const qb = this.postsRepository
         .createQueryBuilder('post')
+        .leftJoinAndSelect('post.bannerFile', 'bannerFile')
         .leftJoinAndSelect('post.categories', 'category')
         .leftJoinAndSelect('post.relatedPosts', 'relatedPosts')
          .where('post.id = :id', { id });
@@ -65,6 +67,22 @@ export class PostsService{
         });
         return data;
     }
+
+    async getDetailPostBySlug(slug: string): Promise<GetPostDto>{
+        const qb = this.postsRepository
+        .createQueryBuilder('post')
+        .leftJoinAndSelect('post.bannerFile', 'bannerFile')
+        .leftJoinAndSelect('post.categories', 'category')
+        .leftJoinAndSelect('post.relatedPosts', 'relatedPosts')
+         .where('post.slug = :slug', { slug });
+        const item = await qb.getOne();
+        const data = plainToInstance(GetPostDto, item, {
+            excludeExtraneousValues: true,
+        });
+        return data;
+    }
+
+
 
     async createPost(dto: CreatePostDto, username: string): Promise<GetPostDto> {
         const queryRunner = this.dataSource.createQueryRunner();
@@ -81,7 +99,7 @@ export class PostsService{
                 title: dto.title,
                 summary: dto.summary,
                 content: dto.content,
-                banner: dto.banner,
+                bannerId: dto.bannerId,
                 slug: slug,
                 categoryId: dto.categoryId,
                 createdBy: username,
@@ -127,6 +145,7 @@ export class PostsService{
                 updatedPost.title = dto.title;
                 updatedPost.slug = slugString(dto.title);
             }
+            if(dto.bannerId) updatedPost.bannerId = dto.bannerId;
             if (dto.summary) updatedPost.summary = dto.summary;
             if (dto.content) updatedPost.content = dto.content;
             if (dto.categoryId) updatedPost.categoryId = dto.categoryId;
