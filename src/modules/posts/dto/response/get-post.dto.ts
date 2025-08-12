@@ -18,11 +18,10 @@ export class GetPostDto extends GetBaseDto{
     @Expose({ name: 'content' })
     content: string;
 
-    @Expose()
-    @Type(() => GetFileDto)
-    bannerFile: GetFileDto;
+    @Expose({name: 'category'})
+    category: string;  
 
     @Expose({name: 'relatedPosts'})
-    @Type(() => GetRelatedPostDto)
-    relatedPosts: GetRelatedPostDto[];
+    relatedPosts: GetPostDto[];
+
 }
