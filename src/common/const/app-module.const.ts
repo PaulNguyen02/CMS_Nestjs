@@ -1,5 +1,4 @@
 import { FilesModule } from '@modules/files/files.module';
-import { CategoriesModule } from '@modules/categories/categories.module';
 import { ContactInformationModule } from '@modules/contact-information/contact-information.module';
 import { FollowUsModule } from '@modules/follow-us/follow-us.module';
 import { MemberModule } from '@modules/members/members.module';
@@ -16,7 +15,6 @@ export const appModules = [
     PostsModule,
     FilesModule,
     MemberModule,
-    CategoriesModule,
     FollowUsModule,
     MenuGroupModule,
     MenuItemModule,

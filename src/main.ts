@@ -1,10 +1,9 @@
 import * as fs from 'fs';
 import { join } from 'path';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './common/response/http-exception-filter';
 import { JwtAuthGuard } from './common/guard/jwt-auth.guard'; 
@@ -19,7 +18,9 @@ async function bootstrap() {
       //httpsOptions,
     }
   );
-
+  app.enableCors({
+    origin: '*',
+  });
   const reflector = app.get(Reflector);
   app.useGlobalGuards(new JwtAuthGuard(reflector)); // Set global guard
 

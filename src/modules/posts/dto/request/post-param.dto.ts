@@ -17,5 +17,5 @@ export class PostParam{
 
     @IsOptional()
     @IsString()
-    categoryName?: string;
+    category?: string;
 }

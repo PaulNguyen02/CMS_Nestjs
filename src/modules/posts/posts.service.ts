@@ -7,13 +7,13 @@ import { Repository, DataSource} from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Posts } from './entities/posts.entity';
-import { Files } from '../files/entities/files.entity';
 import { GetPostDto } from './dto/response/get-post.dto';
 import { CreatePostDto } from './dto/request/create-post.dto';
 import { UpdatePostDto } from './dto/request/update-post.dto'; 
 import { PaginationDto } from '@/common/dto/pagination.dto';
 import { PostParam } from './dto/request/post-param.dto';
 import { PostsException } from './enums/posts-exception';
+import { Category } from './enums/category';
 @Injectable()
 export class PostsService{
     constructor(   
@@ -23,19 +23,18 @@ export class PostsService{
     ) {}
 
     async getPaginatePost(query: PostParam): Promise<PaginationDto<GetPostDto>>{
-        const { page = 1, limit = 10, search, categoryName } = query;
+        const { page = 1, limit = 10, search, category } = query;
         const qb = this.postsRepository.createQueryBuilder('post')
-        .leftJoinAndSelect('post.bannerFile', 'bannerFile')
         if (search) {
             qb.andWhere(
                 `post.title LIKE N'%' + :search + '%'`,
                 { search },
             );
         }
-        if (categoryName) {
+        if (category) {
             qb.andWhere(
-                `category.name LIKE N'%' + :categoryName + '%'`,
-                { categoryName },
+                `post.category LIKE N'%' + :category + '%'`,
+                { category },
             );
         }
         qb.orderBy('post.createdAt', 'DESC').skip((page-1)*limit).take(limit);
@@ -54,31 +53,73 @@ export class PostsService{
     }
 
 
-    async getDetailPost(id: string): Promise<GetPostDto>{
+    async getDetailPost(id: string): Promise<GetPostDto> {
         const qb = this.postsRepository
-        .createQueryBuilder('post')
-        .leftJoinAndSelect('post.bannerFile', 'bannerFile')
-        .leftJoinAndSelect('post.categories', 'category')
-        .leftJoinAndSelect('post.relatedPosts', 'relatedPosts')
-         .where('post.id = :id', { id });
+            .createQueryBuilder('post')
+            .where('post.id = :id', { id });      
         const item = await qb.getOne();
-        const data = plainToInstance(GetPostDto, item, {
+        
+        if (!item) {
+            throw new NotFoundException(PostsException.POST_NOT_FOUND);
+        }
+
+        const relatedPostsQb = this.postsRepository
+        .createQueryBuilder('post')
+        .where('post.category = :category', { category: item.category })
+        .andWhere('post.id != :currentId', { currentId: id })
+        .orderBy('post.createdAt', 'DESC')
+        .limit(5);
+    
+        const relatedPosts = await relatedPostsQb.getMany();
+        
+        const data = new GetPostDto()
+        data.id = item.id;
+        data.title = item.title;
+        data.slug = item.slug;
+        data.summary = item.summary;
+        data.content = item.content;
+        data.category = item.category;
+        data.createdAt = item.createdAt;
+        data.createdBy = item.createdBy;
+        const relatedPost = plainToInstance(GetPostDto, relatedPosts, {
             excludeExtraneousValues: true,
         });
+        data.relatedPosts = relatedPost;
         return data;
     }
 
     async getDetailPostBySlug(slug: string): Promise<GetPostDto>{
         const qb = this.postsRepository
-        .createQueryBuilder('post')
-        .leftJoinAndSelect('post.bannerFile', 'bannerFile')
-        .leftJoinAndSelect('post.categories', 'category')
-        .leftJoinAndSelect('post.relatedPosts', 'relatedPosts')
-         .where('post.slug = :slug', { slug });
+            .createQueryBuilder('post')
+            .where('post.slug = :slug', { slug });
         const item = await qb.getOne();
-        const data = plainToInstance(GetPostDto, item, {
+        
+        if (!item) {
+            throw new NotFoundException(PostsException.POST_NOT_FOUND);
+        }
+
+        const relatedPostsQb = this.postsRepository
+        .createQueryBuilder('post')
+        .where('post.category = :category', { category: item.category })
+        .andWhere('post.slug != :currentSlug', { currentSlug: slug })
+        .orderBy('post.createdAt', 'DESC')
+        .limit(5);
+    
+        const relatedPosts = await relatedPostsQb.getMany();
+        
+        const data = new GetPostDto()
+        data.id = item.id;
+        data.title = item.title;
+        data.slug = item.slug;
+        data.summary = item.summary;
+        data.content = item.content;
+        data.category = item.category;
+        data.createdAt = item.createdAt;
+        data.createdBy = item.createdBy;
+        const relatedPost = plainToInstance(GetPostDto, relatedPosts, {
             excludeExtraneousValues: true,
         });
+        data.relatedPosts = relatedPost;
         return data;
     }
 
@@ -92,25 +133,23 @@ export class PostsService{
             const postRepo = queryRunner.manager.getRepository(Posts);
             const slug = slugString(dto.title);
             const existing = await this.postsRepository.findOne({where: {slug}})
+
             if(existing){
                 throw new BadRequestException(PostsException.SLUG_ALREADY_EXIST)
             }
+
+            const category = dto.category ? Category.SERVICE : Category.PROJECT;
+
             const newPost = postRepo.create({
                 title: dto.title,
                 summary: dto.summary,
                 content: dto.content,
-                bannerId: dto.bannerId,
                 slug: slug,
-                categoryId: dto.categoryId,
+                category: category,
                 createdBy: username,
                 createdAt: new Date(),
             });
             const saved = await postRepo.save(newPost);
-            if (dto.relatedId && dto.relatedId.length > 0) {
-                const relatedPosts = await postRepo.findByIds(dto.relatedId);
-                saved.relatedPosts = relatedPosts;
-                await postRepo.save(saved);
-            }
             await queryRunner.commitTransaction();
             const result = plainToInstance(GetPostDto, saved, {
                 excludeExtraneousValues: true,
@@ -133,8 +172,7 @@ export class PostsService{
             const postRepo = queryRunner.manager.getRepository(Posts);
 
             const updatedPost = await postRepo.findOne({
-                where: { id: postId },
-                relations: ['relatedPosts'],
+                where: { id: postId }
             });
 
             if (!updatedPost) {
@@ -145,20 +183,13 @@ export class PostsService{
                 updatedPost.title = dto.title;
                 updatedPost.slug = slugString(dto.title);
             }
-            if(dto.bannerId) updatedPost.bannerId = dto.bannerId;
             if (dto.summary) updatedPost.summary = dto.summary;
             if (dto.content) updatedPost.content = dto.content;
-            if (dto.categoryId) updatedPost.categoryId = dto.categoryId;
-
+            if (dto.category !== undefined) {
+                updatedPost.category = dto.category ? Category.SERVICE : Category.PROJECT;
+            }
             updatedPost.createdBy = username;
             updatedPost.createdAt = new Date();
-
-            if (dto.relatedId && dto.relatedId.length > 0) {
-                const relatedPosts = await postRepo.findByIds(dto.relatedId);
-                updatedPost.relatedPosts = relatedPosts;
-            } else {
-                updatedPost.relatedPosts = [];
-            }
 
             const savedPost = await postRepo.save(updatedPost);
 
@@ -177,27 +208,13 @@ export class PostsService{
     }
 
     async deletePost(postId: string): Promise<GetPostDto> {
-        // Tìm bài viết cần xóa, load cả quan hệ relatedPosts và relatedByPosts
         const post = await this.postsRepository.findOne({
-            where: { id: postId },
-            relations: ['relatedPosts', 'relatedPosts.relatedByPosts'], // Load quan hệ hai chiều
+            where: { id: postId }
         });
 
         if (!post) {
             throw new NotFoundException(PostsException.POST_NOT_FOUND);
         }
-
-        // Xóa mối quan hệ từ các bài viết liên quan
-        if (post.relatedPosts && post.relatedPosts.length > 0) {
-            for (const relatedPost of post.relatedPosts) {
-                if (relatedPost.relatedByPosts) {
-                // Lọc bỏ bài viết hiện tại khỏi relatedByPosts của relatedPost
-                relatedPost.relatedByPosts = relatedPost.relatedByPosts.filter(p => p.id !== postId);
-                await this.postsRepository.save(relatedPost); // Lưu lại thay đổi
-                }
-            }
-        }
-
         // Xóa bài viết
         const deletedPost = await this.postsRepository.remove(post); // Hoặc sử dụng softRemove nếu cần soft delete
 
@@ -207,5 +224,4 @@ export class PostsService{
         });
         return res;
     }
-
 }

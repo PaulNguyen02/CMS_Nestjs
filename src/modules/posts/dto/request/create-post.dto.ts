@@ -1,5 +1,6 @@
-import { IsString, IsArray, IsOptional} from "@nestjs/class-validator";
+import { IsString, IsOptional} from "@nestjs/class-validator";
 import { ApiProperty } from "@nestjs/swagger";
+import { IsBoolean } from "class-validator";
 export class CreatePostDto {  
     @ApiProperty()
     @IsString()
@@ -15,17 +16,9 @@ export class CreatePostDto {
     @IsString()    
     content: string;
 
-    @ApiProperty({ required: false })
-    @IsOptional()
-    @IsString()
-    bannerId?: string;
-
-    @ApiProperty()
-    @IsString()
-    categoryId: string; 
-
-    @ApiProperty()
-    @IsOptional()
-    @IsArray()
-    relatedId?: string[];
+    @ApiProperty({
+        description: 'True là service, False là project'
+    })
+    @IsBoolean()
+    category: boolean; 
 }
