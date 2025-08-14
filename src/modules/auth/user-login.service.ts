@@ -1,6 +1,6 @@
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { JwtService } from '@nestjs/jwt';
@@ -26,7 +26,12 @@ export class UserLoginService{
     async register(dto: CreateUserLoginDto): Promise<string> {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(dto.password, salt);
-
+        const username = await this.userRepository.findOne({
+            where: { username: dto.username },
+        });
+        if(username){
+            throw new BadRequestException(AuthException.USERNAME_ALREADY_EXISTS);
+        }
         const newUser = this.userRepository.create({
             username: dto.username,
             password: hashedPassword,

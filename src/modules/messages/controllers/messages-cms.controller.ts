@@ -5,12 +5,14 @@ import {
     Query,
     Param
 } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { MessagesService } from '../messages.service';
 import { GetMessageDto } from '../dto/response/get-message.dto';
 import { PaginationDto } from '@/common/dto/pagination.dto';
 import { ApiResponse } from '@/common/response/api-response';
 import { MessageParam } from '../dto/request/message-param.dto';
 
+@ApiBearerAuth('access-token')
 @Controller('messages')
 export class MessagesCMSController {
     constructor(private readonly messageService: MessagesService) {}

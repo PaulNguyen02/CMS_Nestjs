@@ -7,6 +7,7 @@ import { Controller,
     Param,
     Body
 } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { MembersService } from '../members.service';
 import { GetMemberDto } from '../dto/member-response/get-member.dto';
 import { CreateMemberDto } from '../dto/member-request/create-member.dto';
@@ -16,6 +17,7 @@ import { ApiResponse } from '@/common/response/api-response';
 import { MemberParam } from '../dto/member-request/member-param.dto';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 
+@ApiBearerAuth('access-token')
 @Controller('members')
 export class MembersCMSController {
     constructor(private readonly memberService: MembersService) {}

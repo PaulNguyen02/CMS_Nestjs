@@ -5,11 +5,13 @@ import {
     Body, 
     Headers 
 } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { UserLoginService } from '../user-login.service';
 import { GetUserLoginDto } from '../dto/response/get-userlogin.dto';
 import { ApiResponse } from '@/common/response/api-response';
 import { CreateUserLoginDto } from '../dto/request/create-userlogin.dto';
 import { Public } from '@/common/decorators/public.decorator';
+@ApiBearerAuth('access-token')
 @Controller('auth')
 export class AuthController {
     constructor(private readonly userLoginService: UserLoginService) {}

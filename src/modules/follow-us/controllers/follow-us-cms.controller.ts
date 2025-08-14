@@ -7,6 +7,7 @@ import {
     Body,
     Query
  } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { FollowUsService } from '../follow-us.service';
 import { GetFollowUsDto } from '../dto/response/get-follow-us.dto';
 import { CreateFollowUsDto } from '../dto/request/create-follow-us.dto';
@@ -14,6 +15,7 @@ import { ApiResponse } from '@/common/response/api-response';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { FollowUsParam } from '../dto/request/follow-us-param.dto';
 
+@ApiBearerAuth('access-token')
 @Controller('follow-us')
 export class FollowUsCMSController {
     constructor(private readonly followService: FollowUsService) {}

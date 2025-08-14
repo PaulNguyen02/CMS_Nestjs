@@ -1,4 +1,4 @@
-import { IsString} from "@nestjs/class-validator";
+import { IsString, IsBoolean} from "@nestjs/class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 export class CreateWorkingHistoryDto{
     
@@ -10,8 +10,10 @@ export class CreateWorkingHistoryDto{
     @IsString()
     description: string;
 
-    @ApiProperty()
-    @IsString()
-    categories: string;
+    @ApiProperty({
+        description: 'True là dự án, False là kinh nghiệm'
+    })
+    @IsBoolean()
+    categories: boolean; 
 
 }

@@ -10,6 +10,7 @@ import {
     Body
 } from '@nestjs/common';
 import { Express } from 'express';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { FilesService } from '../files.service';
 import { ApiConsumes, ApiBody} from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -21,6 +22,7 @@ import { ApiResponse } from '@/common/response/api-response';
 import { uploadBody } from '@/common/const/upload-body.const';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { PaginationDto } from '@/common/dto/pagination.dto';
+@ApiBearerAuth('access-token')
 @Controller('files')
 export class FilesCMSController {
     constructor(private readonly fileService: FilesService) {}

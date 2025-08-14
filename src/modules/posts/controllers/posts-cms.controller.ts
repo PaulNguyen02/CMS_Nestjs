@@ -8,6 +8,7 @@ import {
     Param,
     Body
  } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { PostsService } from '../posts.service';
 import { GetPostDto } from '../dto/response/get-post.dto';
 import { CreatePostDto } from '../dto/request/create-post.dto';
@@ -17,6 +18,7 @@ import { PaginationDto } from '@/common/dto/pagination.dto';
 import { PostParam } from '../dto/request/post-param.dto';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 
+@ApiBearerAuth('access-token')
 @Controller('posts')
 export class PostsCMSController {
     constructor (private readonly postService: PostsService){}
@@ -25,6 +27,12 @@ export class PostsCMSController {
     async getPaginatePost(@Query() query: PostParam): Promise<ApiResponse<PaginationDto<GetPostDto>>>{
         const res = await this.postService.getPaginatePost(query);
         return ApiResponse.success<PaginationDto<GetPostDto>>(res)
+    }
+
+    @Get('search')
+    async searchPost(@Query('query') search: string): Promise<ApiResponse<GetPostDto[]>>{
+        const res = await this.postService.searchPost(search);
+        return ApiResponse.success<GetPostDto[]>(res);
     }
 
     @Get(':id')

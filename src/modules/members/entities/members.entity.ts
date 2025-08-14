@@ -4,7 +4,7 @@ import {
     Column, 
     JoinColumn, 
     OneToMany,
-    ManyToOne } from "typeorm";
+    OneToOne } from "typeorm";
 import { BaseEntity } from "../../../common/entities/base.entity";
 import { Files } from "../../files/entities/files.entity";
 import { WorkingHistory } from "./working-history.entity";
@@ -23,12 +23,12 @@ export class Member extends BaseEntity{
     @Column()
     position: string;
 
-    @Column({ name: 'image_id', nullable: true })
-    imageId?: string;
+    @Column({ name: 'image_id'})
+    imageId: string;
 
-    @ManyToOne(() => Files, { nullable: true })
-    @JoinColumn({ name: 'image_id' })
-    imageFile?: Files;
+    @OneToOne(() => Files)
+    @JoinColumn({ name: 'image_id' }) 
+    imageFile: Files;
 
     @OneToMany(
         () => WorkingHistory, 

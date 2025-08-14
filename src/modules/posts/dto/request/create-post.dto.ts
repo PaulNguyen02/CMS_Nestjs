@@ -21,4 +21,8 @@ export class CreatePostDto {
     })
     @IsBoolean()
     category: boolean; 
+
+    @ApiProperty()
+    @IsString()
+    bannerId: string;
 }

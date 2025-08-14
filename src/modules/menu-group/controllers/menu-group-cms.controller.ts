@@ -7,6 +7,7 @@ import { Controller,
     Body,
     Query
  } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { MenuGroupsService } from '../menu-group.service';
 import { GetMenuGroupDto } from '../dto/response/get-menugroup.dto';
 import { CreateMenuGroupDto } from '../dto/request/create-menugroup.dto';
@@ -15,6 +16,7 @@ import { ApiResponse } from '@/common/response/api-response';
 import { MenuGroupParam } from '../dto/request/menu-group-param.dto';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 
+@ApiBearerAuth('access-token')
 @Controller('menu-groups')
 export class MenuGroupsCMSController {
     constructor(private readonly menugroupService: MenuGroupsService) {}
