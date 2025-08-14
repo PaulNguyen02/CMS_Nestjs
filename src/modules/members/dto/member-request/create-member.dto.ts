@@ -13,10 +13,9 @@ export class CreateMemberDto{
     @IsString()
     position: string;
 
-    @ApiProperty({ required: false })
-    @IsOptional()
+    @ApiProperty()
     @IsString()
-    imageId?: string;
+    imageId: string;
 
     @ApiProperty({ type: [CreateWorkingHistoryDto] })
     @IsOptional()

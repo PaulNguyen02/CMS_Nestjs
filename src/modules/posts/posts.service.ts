@@ -24,7 +24,9 @@ export class PostsService{
 
     async getPaginatePost(query: PostParam): Promise<PaginationDto<GetPostDto>>{
         const { page = 1, limit = 10, search, category } = query;
-        const qb = this.postsRepository.createQueryBuilder('post')
+        const qb = this.postsRepository
+        .createQueryBuilder('post')
+        .leftJoinAndSelect('post.banner', 'banner')
         if (search) {
             qb.andWhere(
                 `post.title LIKE N'%' + :search + '%'`,
@@ -52,10 +54,26 @@ export class PostsService{
         return res;
     }
 
+    async searchPost(search: string): Promise<GetPostDto[]> {
+        const qb = this.postsRepository
+            .createQueryBuilder('post')
+            .leftJoinAndSelect('post.banner', 'banner')   
+        if (search && search.trim() !== '') {
+            qb.where('post.id LIKE :id', { id: `%${search}%` })
+            .orWhere(`post.title LIKE N'%' + :search + '%'`, { search });
+        }             
+        const data = await qb.getMany();       
+        const res = plainToInstance(GetPostDto, data, {
+            excludeExtraneousValues: true,
+        });    
+        return res;
+    }
+
 
     async getDetailPost(id: string): Promise<GetPostDto> {
         const qb = this.postsRepository
             .createQueryBuilder('post')
+            .leftJoinAndSelect('post.banner', 'banner')
             .where('post.id = :id', { id });      
         const item = await qb.getOne();
         
@@ -65,13 +83,14 @@ export class PostsService{
 
         const relatedPostsQb = this.postsRepository
         .createQueryBuilder('post')
+        .leftJoinAndSelect('post.banner', 'banner')
         .where('post.category = :category', { category: item.category })
         .andWhere('post.id != :currentId', { currentId: id })
         .orderBy('post.createdAt', 'DESC')
         .limit(5);
     
         const relatedPosts = await relatedPostsQb.getMany();
-        
+        const { id: bannerId, url } = item.banner;
         const data = new GetPostDto()
         data.id = item.id;
         data.title = item.title;
@@ -79,6 +98,7 @@ export class PostsService{
         data.summary = item.summary;
         data.content = item.content;
         data.category = item.category;
+        data.banner = { id: bannerId, url };
         data.createdAt = item.createdAt;
         data.createdBy = item.createdBy;
         const relatedPost = plainToInstance(GetPostDto, relatedPosts, {
@@ -91,6 +111,7 @@ export class PostsService{
     async getDetailPostBySlug(slug: string): Promise<GetPostDto>{
         const qb = this.postsRepository
             .createQueryBuilder('post')
+            .leftJoinAndSelect('post.banner', 'banner')
             .where('post.slug = :slug', { slug });
         const item = await qb.getOne();
         
@@ -100,13 +121,14 @@ export class PostsService{
 
         const relatedPostsQb = this.postsRepository
         .createQueryBuilder('post')
+        .leftJoinAndSelect('post.banner', 'banner')
         .where('post.category = :category', { category: item.category })
         .andWhere('post.slug != :currentSlug', { currentSlug: slug })
         .orderBy('post.createdAt', 'DESC')
         .limit(5);
     
         const relatedPosts = await relatedPostsQb.getMany();
-        
+        const { id: bannerId, url } = item.banner;
         const data = new GetPostDto()
         data.id = item.id;
         data.title = item.title;
@@ -114,6 +136,7 @@ export class PostsService{
         data.summary = item.summary;
         data.content = item.content;
         data.category = item.category;
+        data.banner = { id: bannerId, url };
         data.createdAt = item.createdAt;
         data.createdBy = item.createdBy;
         const relatedPost = plainToInstance(GetPostDto, relatedPosts, {
@@ -132,12 +155,18 @@ export class PostsService{
         try {
             const postRepo = queryRunner.manager.getRepository(Posts);
             const slug = slugString(dto.title);
-            const existing = await this.postsRepository.findOne({where: {slug}})
+            const existingSlug = await this.postsRepository.findOne({where: {slug}})
 
-            if(existing){
+            if(existingSlug){
                 throw new BadRequestException(PostsException.SLUG_ALREADY_EXIST)
             }
-
+            const bannerId = dto.bannerId;
+            const existingBanner = await this.postsRepository.findOne({
+                where: { bannerId }
+            });
+            if (existingBanner) {
+                throw new BadRequestException(PostsException.BANNER_ALREADY_EXIST)
+            }
             const category = dto.category ? Category.SERVICE : Category.PROJECT;
 
             const newPost = postRepo.create({
@@ -146,6 +175,7 @@ export class PostsService{
                 content: dto.content,
                 slug: slug,
                 category: category,
+                bannerId: bannerId,
                 createdBy: username,
                 createdAt: new Date(),
             });
@@ -167,7 +197,6 @@ export class PostsService{
         const queryRunner = this.dataSource.createQueryRunner();
         await queryRunner.connect();
         await queryRunner.startTransaction();
-
         try {
             const postRepo = queryRunner.manager.getRepository(Posts);
 
@@ -188,17 +217,16 @@ export class PostsService{
             if (dto.category !== undefined) {
                 updatedPost.category = dto.category ? Category.SERVICE : Category.PROJECT;
             }
+            if(dto.bannerId){
+                updatedPost.bannerId = dto.bannerId;
+            }
             updatedPost.createdBy = username;
             updatedPost.createdAt = new Date();
-
             const savedPost = await postRepo.save(updatedPost);
-
             await queryRunner.commitTransaction();
-
             return plainToInstance(GetPostDto, savedPost, {
                 excludeExtraneousValues: true,
             });
-
         } catch (error) {
             await queryRunner.rollbackTransaction();
             throw error;
@@ -216,8 +244,7 @@ export class PostsService{
             throw new NotFoundException(PostsException.POST_NOT_FOUND);
         }
         // Xóa bài viết
-        const deletedPost = await this.postsRepository.remove(post); // Hoặc sử dụng softRemove nếu cần soft delete
-
+        const deletedPost = await this.postsRepository.remove(post); 
         // Chuyển đối tượng xóa sang DTO
         const res = plainToInstance(GetPostDto, deletedPost, {
         excludeExtraneousValues: true,

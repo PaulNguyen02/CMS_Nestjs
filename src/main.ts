@@ -37,10 +37,13 @@ async function bootstrap() {
   );
   app.useGlobalFilters(new HttpExceptionFilter());
   const config = new DocumentBuilder()
-    .setTitle('My API')
+    .setTitle('VTCP API')
     .setDescription('RESTful API docs')
     .setVersion('1.0')
-    .addBearerAuth() // Nếu dùng JWT
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+      'access-token',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

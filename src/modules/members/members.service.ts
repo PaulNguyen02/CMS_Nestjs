@@ -14,6 +14,7 @@ import { UpdateMemberDto } from './dto/member-request/update-member.dto';
 import { PaginationDto } from '@/common/dto/pagination.dto';
 import { MemberParam } from './dto/member-request/member-param.dto';
 import { MembersExceptions } from './enums/members-exceptions';
+import { Category } from './enums/category';
 @Injectable()
 export class MembersService{
 
@@ -98,21 +99,27 @@ export class MembersService{
         await queryRunner.startTransaction();
         try {
             const slug = slugString(dto.fullName);
-            const existing = await this.memberRepository.findOne({where:{slug}});
-            if(existing){
+            const existingSlug = await this.memberRepository.findOne({where:{slug}});
+            if(existingSlug){
                 throw new BadRequestException(MembersExceptions.SLUG_ALREADY_EXISTING);
             }  
+            const imageId = dto.imageId;
+            const existingImage = await this.memberRepository.findOne({where: { imageId }});
+            if (existingImage) {
+                throw new BadRequestException(MembersExceptions.IMAGE_ALREADY_EXISTING);
+            }            
             const member = queryRunner.manager.create(Member, {
                 fullName: dto.fullName,
                 position: dto.position,
-                imageId: dto.imageId,
+                imageId: imageId,
                 slug: slug,
                 createdAt: new Date(),
                 createdBy: username,
                 workingHistory: dto.workingHistory.map((history) => ({
-                ...history,
-                createdAt: new Date(),
-                createdBy: username,
+                    ...history,
+                    categories: history.categories ? Category.PROJECT : Category.EXPERIENCE,
+                    createdAt: new Date(),
+                    createdBy: username,
                 })),
             });
 
@@ -165,6 +172,7 @@ export class MembersService{
                 const newHistories = dto.workingHistory.map((history) =>
                     workingHistoryRepo.create({
                         ...history,
+                        categories: history.categories ? Category.PROJECT : Category.EXPERIENCE,
                         createdAt: new Date(),
                         createdBy: username,
                         member: member,

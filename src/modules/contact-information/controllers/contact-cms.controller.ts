@@ -7,6 +7,7 @@ import { Controller,
     Body,
     Query
 } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { ApiResponse } from '@/common/response/api-response';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { GetInformationDto } from '../dto/response/get-information.dto';
@@ -15,6 +16,7 @@ import { UpdateInformationDto } from '../dto/request/update-information.dto';
 import { ContactInformationService } from '../contact-information.service';
 import { ContactInformationParam } from '../dto/request/contact-information-param.dto';
 
+@ApiBearerAuth('access-token')
 @Controller('contact-information')
 export class ContactInformationCMSController {
     constructor(private readonly contactInformationService: ContactInformationService) {}

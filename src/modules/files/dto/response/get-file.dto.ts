@@ -18,6 +18,7 @@ export class DetailFile extends GetBaseDto{
     originalName: string;
 
     @Expose({ name: 'url' })
+    @Transform(({ value }) => WEB_HOST + value)
     url: string;
 
     @Expose({ name: 'member_id' })

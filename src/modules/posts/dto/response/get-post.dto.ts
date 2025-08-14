@@ -1,7 +1,6 @@
 import { Expose, Type } from "class-transformer";
-import { GetBaseDto } from "@/common/dto/get-base.dto";
 import { GetFileDto } from "@/modules/files/dto/response/get-file.dto";
-import { GetRelatedPostDto } from "./get-related-post.dto";
+import { GetBaseDto } from "@/common/dto/get-base.dto";
 export class GetPostDto extends GetBaseDto{
     @Expose({ name: 'id' })
     id: string;
@@ -20,8 +19,11 @@ export class GetPostDto extends GetBaseDto{
 
     @Expose({name: 'category'})
     category: string;  
+    
+    @Expose({name: 'banner'})
+    @Type(() => GetFileDto)
+    banner: GetFileDto;
 
     @Expose({name: 'relatedPosts'})
     relatedPosts: GetPostDto[];
-
 }

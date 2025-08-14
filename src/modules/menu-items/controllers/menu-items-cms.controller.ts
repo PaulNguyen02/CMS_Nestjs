@@ -8,6 +8,7 @@ import {
     Param,
     Body 
 } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { MenuItemsService } from '../menu-items.service';
 import { GetMenuItemDto } from '../dto/response/get-menuitem.dto';
 import { CreateMenuItemDto } from '../dto/request/create-menuitem.dto';
@@ -16,6 +17,7 @@ import { ApiResponse } from '@/common/response/api-response';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 import { MenuItemParam } from '../dto/request/menu-item-param.dto';
 
+@ApiBearerAuth('access-token')
 @Controller('menu-items')
 export class MenuItemsCMSController {
     constructor(private readonly menuitemService: MenuItemsService) {}

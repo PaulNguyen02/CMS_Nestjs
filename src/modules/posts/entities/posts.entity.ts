@@ -2,13 +2,11 @@ import {
     Entity, 
     PrimaryGeneratedColumn, 
     Column,  
-    OneToMany,
-    ManyToMany,
-    ManyToOne,
-    JoinColumn,
-    JoinTable } from "typeorm";
-import { BaseEntity } from "../../../common/entities/base.entity";
+    OneToOne,
+    JoinColumn
+} from "typeorm";
 import { Files } from "../../files/entities/files.entity";
+import { BaseEntity } from "../../../common/entities/base.entity";
 @Entity('posts')
 export class Posts extends BaseEntity{
     @PrimaryGeneratedColumn('uuid')
@@ -29,4 +27,10 @@ export class Posts extends BaseEntity{
     @Column({name:'category'})
     category: string;  
 
+    @Column({name:'banner_id'})
+    bannerId: string;
+
+    @OneToOne(() => Files)
+    @JoinColumn({ name: 'banner_id' }) // nối với cột bannerId
+    banner: Files;
 }

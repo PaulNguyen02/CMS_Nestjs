@@ -7,6 +7,7 @@ import { Controller,
     Param,
     Body
 } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { PartnersService } from '../partners.service';
 import { GetPartnerDto } from '../dto/response/get-partner.dto';
 import { CreatePartnerDto } from '../dto/request/create-partner.dto';
@@ -16,6 +17,7 @@ import { ApiResponse } from '@/common/response/api-response';
 import { PartnerParam } from '../dto/request/partner-param.dto';
 import { GetUser } from '@/common/decorators/get-user.decorator';
 
+@ApiBearerAuth('access-token')
 @Controller('partners')
 export class PartnersCMSController {
     constructor(private readonly partnerService: PartnersService) {}
